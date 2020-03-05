@@ -136,7 +136,7 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("<!-- <mat-checkbox #selectAfterAdding> Select tab after adding </mat-checkbox>-->\r\n<div class=\"slidecontainer\">\r\n  <input type=\"range\" min=\"2020\" max=\"2100\" value=\"2020\" class=\"slider\" id=\"yearSliderInput\">\r\n  <p>Jahr: <input type=\"number\" id=\"yearTextInput\"></p>\r\n</div>\r\n<!--\r\n<mat-slider min=\"1\" max=\"5\" step=\"0.5\" value=\"1.5\"></mat-slider>\r\n\r\n<div class=\"range\">\r\n  <input type=\"range\" min=\"2020\" max=\"2100\" steps=\"1\" value=\"1\">\r\n</div>\r\n\r\n<ul class=\"range-labels\">\r\n  <li class=\"active selected\">2020</li>\r\n  <li>2030</li>\r\n  <li>2040</li>\r\n  <li>2050</li>\r\n  <li>2060</li>\r\n  <li>2070</li>\r\n  <li>2080</li>\r\n  <li>2090</li>\r\n  <li>2100</li>\r\n</ul>\r\n-->\r\n<mat-tab-group (selectedTabChange)=\"selectedTab($event)\" [(selectedIndex)]=\"categoryIndex\" mat-align-tabs=\"left\" animationDuration=\"0ms\" onload=\"loadContent()\">\r\n  <mat-tab label=\"Übersicht\">Übersicht\r\n    <!--Inhalt Übersicht -->\r\n\r\n    <div id=\"overview\">\r\n\r\n    </div>\r\n  </mat-tab>\r\n  <mat-tab label=\"Presets\">\r\n    <mat-tab-group animationDuration=\"0ms\" [(selectedIndex)]=\"groupIndex\" (selectedTabChange)=\"selectCategory($event)\" #gender headerPosition=\"above\">\r\n      <mat-tab *ngFor=\"let tab of tabs; let index = index\" [label]=\"tab\">\r\n        <button id=\"saveButton\" mat-raised-button color=\"secondary\" (click)=\"savePopulation()\">Speichern</button>\r\n        <table>\r\n          <tr>\r\n            <td>\r\n              Frauen : <input matInput placeholder=\"Frauen\" id=\"femaleAmountInput\" disabled=\"true\"><br>\r\n              <div id=\"genderF\"></div>\r\n            </td>\r\n            <td>\r\n              Männer : <input matInput placeholder=\"Männer\" id=\"maleAmountInput\" disabled=\"true\"><br>\r\n              <div id=\"genderM\"></div>\r\n            </td>\r\n          </tr>\r\n        </table>\r\n        \r\n      </mat-tab>\r\n    </mat-tab-group>\r\n  </mat-tab>\r\n  <mat-tab label=\"Fertilität\">\r\n    <mat-tab-group animationDuration=\"0ms\" [(selectedIndex)]=\"groupIndex\" (selectedTabChange)=\"selectCategory($event)\" #fertility>\r\n      <mat-tab *ngFor=\"let tab of tabs; let index = index\" [label]=\"tab\">\r\n        <button id=\"saveButton\" mat-raised-button color=\"secondary\" style=\"visibility: hidden;\" (click)=\"saveFertility()\">Speichern</button>\r\n        <table>\r\n          <tr>\r\n            <td>\r\n              Frauen : <input matInput placeholder=\"Fertilität\" id=\"femaleAmountInput\"><br>\r\n              <div id=\"fertilityF\"></div>\r\n            </td>\r\n          </tr>\r\n        </table>\r\n      </mat-tab>\r\n    </mat-tab-group>\r\n  </mat-tab>\r\n  <mat-tab label=\"Einwanderung\">\r\n    <mat-tab-group  animationDuration=\"0ms\" [(selectedIndex)]=\"groupIndex\" (selectedTabChange)=\"selectCategory($event)\" #migration>\r\n      <mat-tab *ngFor=\"let tab of tabs; let index = index\" [label]=\"tab\">\r\n        <button id=\"saveButton\" mat-raised-button color=\"secondary\" style=\"visibility: hidden;\" (click)=\"saveImmigration()\">Speichern</button>\r\n        <table>\r\n          <tr>\r\n            <td>\r\n              Frauen : <input matInput placeholder=\"Frauen\" id=\"femaleAmountInput\"><br>\r\n              <div id=\"migrationF\"></div>\r\n            </td>\r\n            <td>\r\n              Männer : <input matInput placeholder=\"Männer\" id=\"maleAmountInput\"><br>\r\n              <div id=\"migrationM\"></div>\r\n            </td>\r\n          </tr>\r\n        </table>\r\n      </mat-tab>\r\n    </mat-tab-group>\r\n  </mat-tab>\r\n  <mat-tab label=\"Überlebensrate\">\r\n    <mat-tab-group  animationDuration=\"0ms\" [(selectedIndex)]=\"groupIndex\" (selectedTabChange)=\"selectCategory($event)\" #deathRate>\r\n      <mat-tab *ngFor=\"let tab of tabs; let index = index\" [label]=\"tab\">\r\n        <button id=\"saveButton\" mat-raised-button color=\"secondary\" style=\"visibility: hidden;\" (click)=\"saveSurvive()\">Speichern</button>\r\n        <table>\r\n          <tr>\r\n            <td>\r\n              Frauen : \r\n              <div id=\"surviveF\"></div>\r\n            </td>\r\n            <td>\r\n              Männer :\r\n              <div id=\"surviveM\"></div>\r\n            </td>\r\n          </tr>\r\n        </table>\r\n      </mat-tab>\r\n    </mat-tab-group>\r\n  </mat-tab>\r\n  <mat-tab label=\"Nachzug\">\r\n    <mat-tab-group  animationDuration=\"0ms\" [(selectedIndex)]=\"groupIndex\" (selectedTabChange)=\"selectCategory($event)\" #followUp>\r\n      <mat-tab *ngFor=\"let tab of tabs; let index = index\" [label]=\"tab\">\r\n        <button id=\"saveButton\" mat-raised-button color=\"secondary\" style=\"visibility: hidden;\" (click)=\"saveReunification()\">Speichern</button>\r\n        <table>\r\n          <tr>\r\n            <td>\r\n              Frauen : <input matInput placeholder=\"Frauen\" id=\"femaleAmountInput\"><br>\r\n              <div id=\"reunificationF\"></div>\r\n            </td>\r\n            <td>\r\n              Männer : <input matInput placeholder=\"Männer\" id=\"maleAmountInput\"><br>\r\n              <div id=\"reunificationM\"></div>\r\n            </td>\r\n          </tr>\r\n        </table>\r\n      </mat-tab>\r\n    </mat-tab-group>\r\n  </mat-tab>\r\n</mat-tab-group>\r\n\r\n<!--Geschlechtsverteilung', 'Fertilität', 'Einwanderung', 'Sterberate', 'Nachzug']; -->\r\n<!--\r\n<mat-tab-group>\r\n  <mat-tab *ngFor=\"let tab of tabs; let index = index\" [label]=\"tab\">\r\n    <mat-tab-group mat-align-tabs=\"center\" (selectedTabChange)=\"selectedTab($event)\">\r\n      <mat-tab label=\"Übersicht\">Übersicht </mat-tab>\r\n\r\n      <mat-tab label=\"Geschlechtsverteilung\">Verteilung Geschlecht\r\n        <br/>\r\n        <button mat-raised-button class=\"TabExampleComponent\" (click)=\"setRandomValues()\">Load Random Values</button>\r\n        <br/>\r\n      </mat-tab>\r\n      <mat-tab label=\"Fertilität\"> Fertilitätsraten</mat-tab>\r\n      <mat-tab label=\"Einwanderung\"> Einwanderung</mat-tab>\r\n      <mat-tab label=\"Auswanderung\"> Auswanderung</mat-tab>\r\n      <mat-tab label=\"Sterberaten\"> Sterberaten </mat-tab>\r\n      <mat-tab label=\"Nachzug\"> Nachzug</mat-tab>\r\n\r\n\r\n    </mat-tab-group>\r\n\r\n  </mat-tab>\r\n</mat-tab-group>\r\n-->\r\n\r\n<!--- VARIANTE ZUM AUSPROBIEREN\r\n<mat-tab-group mat-align-tabs=\"start\">\r\n  <mat-tab label=\"Deutschland\">\r\n    <mat-tab-group mat-align-tabs=\"center\">\r\n      <mat-tab label=\"Fertilität\"> Fertilität</mat-tab>\r\n      <mat-tab label=\"Sterbe\"> Sterbe</mat-tab>\r\n      <mat-tab label=\"irgendwas\"> irgendwas </mat-tab>\r\n    </mat-tab-group>\r\n  </mat-tab>\r\n  <mat-tab label=\"Einwanderer Stufe 1 \">\r\n    <mat-tab-group mat-align-tabs=\"center\">\r\n      <mat-tab label=\"Fertilität\"> Fertilität</mat-tab>\r\n      <mat-tab label=\"Sterbe\"> Sterbe</mat-tab>\r\n      <mat-tab label=\"irgendwas\"> irgendwas </mat-tab>\r\n    </mat-tab-group>\r\n  </mat-tab>\r\n</mat-tab-group>\r\n-->\r\n");
+/* harmony default export */ __webpack_exports__["default"] = ("<!-- <mat-checkbox #selectAfterAdding> Select tab after adding </mat-checkbox>-->\r\n<div class=\"slidecontainer\">\r\n  <input type=\"range\" min=\"2020\" max=\"2100\" value=\"2020\" class=\"slider\" id=\"yearSliderInput\">\r\n  <p>Jahr: <input type=\"number\" id=\"yearTextInput\"></p>\r\n</div>\r\n<!--\r\n<mat-slider min=\"1\" max=\"5\" step=\"0.5\" value=\"1.5\"></mat-slider>\r\n\r\n<div class=\"range\">\r\n  <input type=\"range\" min=\"2020\" max=\"2100\" steps=\"1\" value=\"1\">\r\n</div>\r\n\r\n<ul class=\"range-labels\">\r\n  <li class=\"active selected\">2020</li>\r\n  <li>2030</li>\r\n  <li>2040</li>\r\n  <li>2050</li>\r\n  <li>2060</li>\r\n  <li>2070</li>\r\n  <li>2080</li>\r\n  <li>2090</li>\r\n  <li>2100</li>\r\n</ul>\r\n-->\r\n<mat-tab-group (selectedTabChange)=\"selectedTab($event)\" [(selectedIndex)]=\"categoryIndex\" mat-align-tabs=\"left\" animationDuration=\"0ms\" onload=\"loadContent()\">\r\n  <mat-tab label=\"Übersicht\">Übersicht\r\n    <!--Inhalt Übersicht -->\r\n\r\n    <div id=\"overview\">\r\n\r\n    </div>\r\n  </mat-tab>\r\n  <mat-tab label=\"Startverteilung\">\r\n    <mat-tab-group animationDuration=\"0ms\" [(selectedIndex)]=\"groupIndex\" (selectedTabChange)=\"selectCategory($event)\" #gender headerPosition=\"above\">\r\n      <mat-tab *ngFor=\"let tab of tabs; let index = index\" [label]=\"tab\">\r\n        <button id=\"saveButton\" mat-raised-button color=\"secondary\" (click)=\"savePopulation()\">Speichern</button>\r\n        <table>\r\n          <tr>\r\n            <td>\r\n              Frauen : <input matInput placeholder=\"Frauen\" id=\"femaleAmountInput\" disabled=\"true\"><br>\r\n              <div id=\"genderF\"></div>\r\n            </td>\r\n            <td>\r\n              Männer : <input matInput placeholder=\"Männer\" id=\"maleAmountInput\" disabled=\"true\"><br>\r\n              <div id=\"genderM\"></div>\r\n            </td>\r\n          </tr>\r\n        </table>\r\n        \r\n      </mat-tab>\r\n    </mat-tab-group>\r\n  </mat-tab>\r\n  <mat-tab label=\"Fertilität\">\r\n    <mat-tab-group animationDuration=\"0ms\" [(selectedIndex)]=\"groupIndex\" (selectedTabChange)=\"selectCategory($event)\" #fertility>\r\n      <mat-tab *ngFor=\"let tab of tabs; let index = index\" [label]=\"tab\">\r\n        <button id=\"saveButton\" mat-raised-button color=\"secondary\" style=\"visibility: hidden;\" (click)=\"saveFertility()\">Speichern</button>\r\n        <table>\r\n          <tr>\r\n            <td>\r\n              Frauen : <input matInput placeholder=\"Fertilität\" id=\"femaleAmountInput\"><br>\r\n              <div id=\"fertilityF\"></div>\r\n            </td>\r\n          </tr>\r\n        </table>\r\n      </mat-tab>\r\n    </mat-tab-group>\r\n  </mat-tab>\r\n  <mat-tab label=\"Einwanderung\">\r\n    <mat-tab-group  animationDuration=\"0ms\" [(selectedIndex)]=\"groupIndex\" (selectedTabChange)=\"selectCategory($event)\" #migration>\r\n      <mat-tab *ngFor=\"let tab of tabs; let index = index\" [label]=\"tab\">\r\n        <button id=\"saveButton\" mat-raised-button color=\"secondary\" style=\"visibility: hidden;\" (click)=\"saveImmigration()\">Speichern</button>\r\n        <table>\r\n          <tr>\r\n            <td>\r\n              Frauen : <input matInput placeholder=\"Frauen\" id=\"femaleAmountInput\"><br>\r\n              <div id=\"migrationF\"></div>\r\n            </td>\r\n            <td>\r\n              Männer : <input matInput placeholder=\"Männer\" id=\"maleAmountInput\"><br>\r\n              <div id=\"migrationM\"></div>\r\n            </td>\r\n          </tr>\r\n        </table>\r\n      </mat-tab>\r\n    </mat-tab-group>\r\n  </mat-tab>\r\n  <mat-tab label=\"Überlebensrate\">\r\n    <mat-tab-group  animationDuration=\"0ms\" [(selectedIndex)]=\"groupIndex\" (selectedTabChange)=\"selectCategory($event)\" #deathRate>\r\n      <mat-tab *ngFor=\"let tab of tabs; let index = index\" [label]=\"tab\">\r\n        <button id=\"saveButton\" mat-raised-button color=\"secondary\" style=\"visibility: hidden;\" (click)=\"saveSurvive()\">Speichern</button>\r\n        <table>\r\n          <tr>\r\n            <td>\r\n              Frauen : \r\n              <div id=\"surviveF\"></div>\r\n            </td>\r\n            <td>\r\n              Männer :\r\n              <div id=\"surviveM\"></div>\r\n            </td>\r\n          </tr>\r\n        </table>\r\n      </mat-tab>\r\n    </mat-tab-group>\r\n  </mat-tab>\r\n  <mat-tab label=\"Nachzug\">\r\n    <mat-tab-group  animationDuration=\"0ms\" [(selectedIndex)]=\"groupIndex\" (selectedTabChange)=\"selectCategory($event)\" #followUp>\r\n      <mat-tab *ngFor=\"let tab of tabs; let index = index\" [label]=\"tab\">\r\n        <button id=\"saveButton\" mat-raised-button color=\"secondary\" style=\"visibility: hidden;\" (click)=\"saveReunification()\">Speichern</button>\r\n        <table>\r\n          <tr>\r\n            <td>\r\n              Frauen : <input matInput placeholder=\"Frauen\" id=\"femaleAmountInput\"><br>\r\n              <div id=\"reunificationF\"></div>\r\n            </td>\r\n            <td>\r\n              Männer : <input matInput placeholder=\"Männer\" id=\"maleAmountInput\"><br>\r\n              <div id=\"reunificationM\"></div>\r\n            </td>\r\n          </tr>\r\n        </table>\r\n      </mat-tab>\r\n    </mat-tab-group>\r\n  </mat-tab>\r\n</mat-tab-group>\r\n\r\n<!--Geschlechtsverteilung', 'Fertilität', 'Einwanderung', 'Sterberate', 'Nachzug']; -->\r\n<!--\r\n<mat-tab-group>\r\n  <mat-tab *ngFor=\"let tab of tabs; let index = index\" [label]=\"tab\">\r\n    <mat-tab-group mat-align-tabs=\"center\" (selectedTabChange)=\"selectedTab($event)\">\r\n      <mat-tab label=\"Übersicht\">Übersicht </mat-tab>\r\n\r\n      <mat-tab label=\"Geschlechtsverteilung\">Verteilung Geschlecht\r\n        <br/>\r\n        <button mat-raised-button class=\"TabExampleComponent\" (click)=\"setRandomValues()\">Load Random Values</button>\r\n        <br/>\r\n      </mat-tab>\r\n      <mat-tab label=\"Fertilität\"> Fertilitätsraten</mat-tab>\r\n      <mat-tab label=\"Einwanderung\"> Einwanderung</mat-tab>\r\n      <mat-tab label=\"Auswanderung\"> Auswanderung</mat-tab>\r\n      <mat-tab label=\"Sterberaten\"> Sterberaten </mat-tab>\r\n      <mat-tab label=\"Nachzug\"> Nachzug</mat-tab>\r\n\r\n\r\n    </mat-tab-group>\r\n\r\n  </mat-tab>\r\n</mat-tab-group>\r\n-->\r\n\r\n<!--- VARIANTE ZUM AUSPROBIEREN\r\n<mat-tab-group mat-align-tabs=\"start\">\r\n  <mat-tab label=\"Deutschland\">\r\n    <mat-tab-group mat-align-tabs=\"center\">\r\n      <mat-tab label=\"Fertilität\"> Fertilität</mat-tab>\r\n      <mat-tab label=\"Sterbe\"> Sterbe</mat-tab>\r\n      <mat-tab label=\"irgendwas\"> irgendwas </mat-tab>\r\n    </mat-tab-group>\r\n  </mat-tab>\r\n  <mat-tab label=\"Einwanderer Stufe 1 \">\r\n    <mat-tab-group mat-align-tabs=\"center\">\r\n      <mat-tab label=\"Fertilität\"> Fertilität</mat-tab>\r\n      <mat-tab label=\"Sterbe\"> Sterbe</mat-tab>\r\n      <mat-tab label=\"irgendwas\"> irgendwas </mat-tab>\r\n    </mat-tab-group>\r\n  </mat-tab>\r\n</mat-tab-group>\r\n-->\r\n");
 
 /***/ }),
 
@@ -636,12 +636,7 @@ let ChartService = class ChartService {
         this.svg.append("g")
             .attr("transform", "translate(" + this.margin.left + ", " + xAxisTranslate + ")")
             .call(x_axis);
-        var max = d3__WEBPACK_IMPORTED_MODULE_2__["max"](data);
-        for (var i = 0; i <= 100; i++) {
-            if (data[i] != undefined) {
-                this.clickGraph(i * this.mod + this.margin.left, this.height - this.height * (data[i] / max) + this.margin.top);
-            }
-        }
+        var max = (changeScaling) ? d3__WEBPACK_IMPORTED_MODULE_2__["max"](data) : 1;
         if (!editable) {
             svg.on('click', function () {
                 // Ignore the click event if it was suppressed
@@ -651,6 +646,11 @@ let ChartService = class ChartService {
             });
         }
         this.updateYAxis(data);
+        for (var i = 0; i <= 100; i++) {
+            if (data[i] != undefined) {
+                this.clickGraph(i * this.mod + this.margin.left, this.height - this.height * (data[i] / max) + this.margin.top);
+            }
+        }
     }
     getDirty() {
         return this.dirty;
@@ -667,7 +667,7 @@ let ChartService = class ChartService {
     }
     getUserPoints() {
         var points = [];
-        for (var i = 0; i < 100; i++) {
+        for (var i = 0; i <= 100; i++) {
             if (this.points[i] != undefined) {
                 points.push(i);
             }
@@ -678,8 +678,18 @@ let ChartService = class ChartService {
         if (this.yGraph != undefined) {
             this.yGraph.remove();
         }
+        var max = 0;
+        for (var i = 0; i <= 100; i++) {
+            if (data[max] < data[i]) {
+                max = i;
+            }
+        }
+        var scaling = 1;
+        if (this.points[max] != undefined) {
+            scaling = this.height / (this.height - Number(this.points[max].attr('y')) + this.margin.top);
+        }
         var yscale = d3__WEBPACK_IMPORTED_MODULE_2__["scaleLinear"]()
-            .domain([0, d3__WEBPACK_IMPORTED_MODULE_2__["max"](data)])
+            .domain([0, d3__WEBPACK_IMPORTED_MODULE_2__["max"](data) * scaling])
             .range([this.height, 0]);
         var y_axis = d3__WEBPACK_IMPORTED_MODULE_2__["axisLeft"](yscale);
         this.yGraph = this.svg.append("g");
@@ -733,7 +743,7 @@ let ChartService = class ChartService {
         }
         if (this.lines[i] != undefined) {
             this.lines[i].remove();
-            this.lines.splice(i, 1);
+            this.lines[i] = undefined;
         }
     }
     removePoint(i, updateOther = true) {
@@ -742,7 +752,7 @@ let ChartService = class ChartService {
         }
         if (this.points[i] != undefined) {
             this.points[i].remove();
-            this.points.splice(i, 1);
+            this.points[i] = undefined;
         }
     }
     updateGraph(y, point) {
@@ -752,14 +762,21 @@ let ChartService = class ChartService {
             while (this.points[pos] == undefined || this.points[pos].attr('id') != id) {
                 pos += 1;
             }
-            let i = pos - 1;
-            while (this.lines[i] == undefined && i > 0) {
-                i--;
+            if (pos != 0) {
+                let i = pos - 1;
+                while (this.lines[i] == undefined && i > 0) {
+                    i--;
+                }
+                this.updateLine(i, "x2", this.lines[pos].attr('x2'));
+                this.updateLine(i, "y2", this.lines[pos].attr('y2'));
+                this.removeLine(pos);
+                this.removePoint(pos);
             }
-            this.updateLine(i, "x2", this.lines[pos].attr('x2'));
-            this.updateLine(i, "y2", this.lines[pos].attr('y2'));
-            this.removeLine(pos);
-            this.removePoint(pos);
+            else {
+                this.lines[pos].attr("x1", this.margin.left);
+                this.lines[pos].attr("y1", this.height + this.margin.top);
+                this.removePoint(pos);
+            }
         }
         this.calculateNewValues();
         this.updateYAxis(this.values);
@@ -769,14 +786,14 @@ let ChartService = class ChartService {
         this.values = [];
         for (let i = 0; i <= 100; i++) {
             if (this.points[i] != undefined) {
-                let y = this.height - Number(this.points[i].attr('y'));
+                let y = this.height - Number(this.points[i].attr('y')) + this.margin.top;
                 if (last < i - 1) { //if the last found point is more than 1 difference we have to do some calculations
                     let b = 0; //this is only viable if the index is 0
                     let dx = i;
                     let dy = y;
                     if (i != 0 && this.points[last] != undefined) {
                         dx = i - last;
-                        b = this.height - Number(this.points[last].attr('y'));
+                        b = this.height - Number(this.points[last].attr('y')) + this.margin.top;
                         dy = y - b;
                     }
                     let a = dy / dx;
@@ -796,7 +813,7 @@ let ChartService = class ChartService {
             let dy = 0;
             if (this.points[last] != undefined) {
                 dx = 100 - last;
-                b = this.height - Number(this.points[last].attr('y'));
+                b = this.height - Number(this.points[last].attr('y')) + this.margin.top;
                 dy = 0 - b;
             }
             let a = dy / dx;
@@ -809,7 +826,13 @@ let ChartService = class ChartService {
             this.values.forEach(function (element, index, arr) { arr[index] = 1; });
             amount = this.values.length;
         }
-        const relative = 1 / amount;
+        var relative = 1;
+        if (this.changeScaling) {
+            relative = 1 / amount;
+        }
+        else {
+            relative = 1 / this.height;
+        }
         this.values.forEach(function (element, index, arr) { arr[index] *= relative; });
         // let value = 0;
         // this.values.forEach(element => {
@@ -834,9 +857,9 @@ let ChartService = class ChartService {
             }
             if (this.points[index] == undefined) {
                 if (this.lines.length == 0) {
-                    this.lines[0] = this.svg.append('line')
+                    this.lines[0] = this.svg.append('line') // new initial line is added and connected to 0
                         .style('stroke', 'gray') // <<<<< Add a color
-                        .attr('x1', 0 + this.margin.left)
+                        .attr('x1', this.margin.left)
                         .attr('y1', this.height + this.margin.top)
                         .attr('x2', x)
                         .attr('y2', y);
@@ -878,6 +901,11 @@ let ChartService = class ChartService {
                 }
                 const chart = this;
                 // Append a new point
+                var tooltip = d3__WEBPACK_IMPORTED_MODULE_2__["select"]("body")
+                    .append("div")
+                    .style("position", "absolute")
+                    .style("z-index", "10")
+                    .style("visibility", "hidden");
                 this.points[index] = this.svg.append('circle')
                     .attr('transform', 'translate(' + x + ',' + y + ')')
                     .attr('r', '5')
@@ -886,13 +914,27 @@ let ChartService = class ChartService {
                     .attr('x', x)
                     .attr('class', 'dot')
                     .style('cursor', 'pointer')
-                    .attr('fill', 'steelblue');
+                    .attr('fill', 'steelblue')
+                    .on("mouseover", function () {
+                    tooltip.style("visibility", "visible");
+                    tooltip.text((Math.round(chart.values[index] * 10000) / 10000).toString());
+                    tooltip.style("top", (d3__WEBPACK_IMPORTED_MODULE_2__["event"].y - 10) + "px").style("left", (d3__WEBPACK_IMPORTED_MODULE_2__["event"].x + 10) + "px");
+                })
+                    .on("mousemove", function () {
+                    tooltip.style("top", (d3__WEBPACK_IMPORTED_MODULE_2__["event"].y - 10) + "px").style("left", (d3__WEBPACK_IMPORTED_MODULE_2__["event"].x + 10) + "px");
+                })
+                    .on("mouseout", function () {
+                    tooltip.style("visibility", "hidden");
+                });
                 if (this.editable) {
                     this.points[index].call(d3__WEBPACK_IMPORTED_MODULE_2__["drag"]().on('start', function () {
                         d3__WEBPACK_IMPORTED_MODULE_2__["select"](this).attr('fill', 'orange');
                     })
                         .on('drag', function () {
                         const y = d3__WEBPACK_IMPORTED_MODULE_2__["event"].y;
+                        tooltip.style("visibility", "visible");
+                        tooltip.text((Math.round(chart.values[index] * 10000) / 10000).toString());
+                        tooltip.style("top", (chart.height - chart.margin.top - chart.margin.bottom + d3__WEBPACK_IMPORTED_MODULE_2__["event"].y - 35) + "px").style("left", (d3__WEBPACK_IMPORTED_MODULE_2__["event"].pageX + 10) + "px");
                         chart.dragGraph(y, this);
                     })
                         .on('end', function () {
@@ -900,6 +942,7 @@ let ChartService = class ChartService {
                         thisElement.attr('fill', 'steelblue');
                         const x = Number(thisElement.attr('x'));
                         const y = Number(thisElement.attr('y'));
+                        tooltip.style("visibility", "hidden");
                         chart.updateGraph(y, this);
                     }));
                 }
@@ -1390,7 +1433,7 @@ let DataService = DataService_1 = class DataService {
         this.generateEmptyYears();
         this.fillArraysEmpty();
         this.fillStartPopulation();
-        this.fillRandomYearwithDummyData();
+        // this.fillRandomYearwithDummyData();
         this.calculatePopulation(2021);
         // this.calculatePopulation();
     }
@@ -1446,6 +1489,16 @@ let DataService = DataService_1 = class DataService {
                 nmFemale.birthrate_generated = false;
                 nnmFemale.birthrate_generated = false;
                 nFemale.birthrate_generated = false;
+            }
+            if (i == 0 || i == 100) {
+                female.amount_generated = false;
+                male.amount_generated = false;
+                nmMale.amount_generated = false;
+                nmFemale.amount_generated = false;
+                nnmMale.amount_generated = false;
+                nnmFemale.amount_generated = false;
+                nMale.amount_generated = false;
+                nFemale.amount_generated = false;
             }
             muslim.pushFemale(nnmFemale);
             muslim.pushMale(nnmMale);
@@ -1682,7 +1735,6 @@ let DataService = DataService_1 = class DataService {
             genderYear.birthrate_generated = genderBeforeYear.birthrate_generated;
         }
         if (genderYear.immigration_flag) {
-            console.log('hier stop immigration');
             // ToDO : POopuilationsarray , nochmal die immigration überprüfen (siehe amount flag)
             genderYear.immigration = genderBeforeYear.immigration;
             genderYear.immigration_generated = genderBeforeYear.immigration_generated;
@@ -1818,7 +1870,7 @@ let DataService = DataService_1 = class DataService {
         return 'translate(' + x + ',' + y + ')';
     }
     getMargins() {
-        return { bottom: 0, left: 0, middle: 0, right: 0, top: 0 };
+        return { bottom: 0, left: 0, middle: 28, right: 0, top: 0 };
     }
     saveYear(year, data) {
         this.years[year] = data;
@@ -2252,7 +2304,7 @@ let PyramidComponent = class PyramidComponent {
         this.regionWidth = this.width / 2 - this.margin.middle;
         this.pointA = this.regionWidth;
         this.pointB = this.width - this.regionWidth;
-        this.heightPerBar = (this.height - this.margin.top - this.margin.bottom) / 101; // evtl 80?
+        this.heightPerBar = (this.height - this.margin.top - this.margin.bottom) / 101;
         this.year = year;
     }
     ngOnInit() {
@@ -2296,23 +2348,26 @@ let PyramidComponent = class PyramidComponent {
         const yScale = d3__WEBPACK_IMPORTED_MODULE_2__["scaleLinear"]()
             .rangeRound([this.height, 0])
             .domain([0, 101]);
+        const yScale2 = d3__WEBPACK_IMPORTED_MODULE_2__["scaleLinear"]()
+            .rangeRound([this.height, 0])
+            .domain([0, 101]);
         // const z = d3.scaleOrdinal(d3.schemeBrBG).domain(this.keys);
         const yAxisLeft = d3__WEBPACK_IMPORTED_MODULE_2__["axisRight"](yScale)
             .tickSize(4)
             .tickPadding(this.margin.middle - 4);
-        const yAxisRight = d3__WEBPACK_IMPORTED_MODULE_2__["axisLeft"](yScale); // .tickSize(4);
+        const yAxisRight = d3__WEBPACK_IMPORTED_MODULE_2__["axisLeft"](yScale2); // .tickSize(4);
         const xAxisRight = d3__WEBPACK_IMPORTED_MODULE_2__["axisBottom"](xScale); //        .tickFormat(d3.format('%'));
         const xAxisLeft = d3__WEBPACK_IMPORTED_MODULE_2__["axisBottom"](xScale.copy().range([this.pointA, 0])); // .tickFormat(d3.format('%'));
         // REVERSE THE X-AXIS SCALE ON THE LEFT SIDE BY REVERSING THE RANGE
         // Text
         this.svg.append('text')
             .attr('transform', 'translate(' + (this.pointA / 2) + ' ,' +
-            (this.height + this.margin.top + 40) + ')')
+            (this.height + this.margin.top + 65) + ')')
             .style('text-anchor', 'middle')
             .text('Frauen');
         this.svg.append('text')
             .attr('transform', 'translate(' + (this.regionWidth + this.pointB / 2) + ' ,' +
-            (this.height + this.margin.top + 40) + ')')
+            (this.height + this.margin.top + 65) + ')')
             .style('text-anchor', 'middle')
             .text('Männer');
         //
@@ -2320,21 +2375,32 @@ let PyramidComponent = class PyramidComponent {
         this.g.append('g')
             .attr('class', 'axis y left')
             .attr('transform', this.dataService.translation(this.pointA, 0))
-            .call(yAxisLeft)
-            .selectAll('text')
-            .style('text-anchor', 'middle');
+            .call(yAxisLeft);
         this.g.append('g')
             .attr('class', 'axis y right')
             .attr('transform', this.dataService.translation(this.pointB, 0))
-            .call(yAxisRight);
+            .call(yAxisRight)
+            .selectAll('text').remove();
         this.g.append('g')
             .attr('class', 'axis x left')
             .attr('transform', this.dataService.translation(0, this.height))
-            .call(xAxisLeft);
+            .call(xAxisLeft)
+            .selectAll('text')
+            .style('text-anchor', 'end')
+            .attr('font-weight', 'italic')
+            .attr('dx', '-.7em')
+            .attr('dy', '.2em')
+            .attr('transform', 'rotate(-45)');
         this.g.append('g')
             .attr('class', 'axis x right')
             .attr('transform', this.dataService.translation(this.pointB, this.height))
-            .call(xAxisRight);
+            .call(xAxisRight)
+            .selectAll('text')
+            .style('text-anchor', 'end')
+            .attr('font-weight', 'italic')
+            .attr('dx', '-.7em')
+            .attr('dy', '.2em')
+            .attr('transform', 'rotate(-45)');
         //  MAKE GROUPS FOR EACH SIDE OF CHART
         // scale(-1,1) is used to reverse the left side so the bars grow left instead of right
         const leftBarGroup = this.g.selectAll('g.FemaleAmount')
@@ -2371,7 +2437,19 @@ let PyramidComponent = class PyramidComponent {
             .attr('x', d => xScale(d[0]))
             .attr('width', d => xScale(d[1]) - xScale(d[0]))
             .attr('y', d => yScale(d.data.age) - this.heightPerBar)
-            .attr('height', this.heightPerBar); // .attr('fill', (d, i) => colors[i]);
+            .attr('height', this.heightPerBar)
+            .on('mouseover', () => {
+            tooltip.style('display', null);
+        })
+            .on('mouseout', () => {
+            tooltip.style('display', 'none');
+        })
+            .on('mousemove', function (d, i) {
+            const xPosition = d3__WEBPACK_IMPORTED_MODULE_2__["mouse"](this)[0] + 15;
+            const yPosition = d3__WEBPACK_IMPORTED_MODULE_2__["mouse"](this)[1] + 20;
+            tooltip.attr('transform', 'translate(' + xPosition + ',' + yPosition + ')');
+            tooltip.select('text').text(Number(d[1] - d[0]).toLocaleString());
+        }); // .attr('fill', (d, i) => colors[i]);
         rightBarGroup.selectAll('.bar.right')
             .data(d => d)
             .enter()
@@ -2381,15 +2459,15 @@ let PyramidComponent = class PyramidComponent {
             .attr('y', d => yScale(d.data.age) - this.heightPerBar)
             .attr('height', this.heightPerBar)
             .attr('typeComb', d => d.data.typecomb)
-            .on('mouseover', function () {
+            .on('mouseover', () => {
             tooltip.style('display', null);
         })
-            .on('mouseout', function () {
+            .on('mouseout', () => {
             tooltip.style('display', 'none');
         })
             .on('mousemove', function (d, i) {
             const xPosition = d3__WEBPACK_IMPORTED_MODULE_2__["mouse"](this)[0] - 15;
-            const yPosition = d3__WEBPACK_IMPORTED_MODULE_2__["mouse"](this)[1] - 25;
+            const yPosition = d3__WEBPACK_IMPORTED_MODULE_2__["mouse"](this)[1] - 20;
             tooltip.attr('transform', 'translate(' + xPosition + ',' + yPosition + ')');
             tooltip.select('text').text(Number(d[1] - d[0]).toLocaleString());
         });
@@ -2728,13 +2806,18 @@ let TabExampleComponent = class TabExampleComponent {
         slider.oninput = function () {
             output.value = slider.value;
             site.year = Number(slider.value);
-            site.loadContent();
+            if (site.categoryIndex != 1) {
+                site.loadContent();
+            }
         };
         output.onchange = function () {
             if (Number(output.value) > 2100) {
                 output.value = '2100';
             }
             else if (Number(output.value) < 2020) {
+                output.value = '2020';
+            }
+            else {
                 output.value = '2020';
             }
             slider.value = output.value;
@@ -2751,34 +2834,33 @@ let TabExampleComponent = class TabExampleComponent {
     savePopulation() {
         let femaleValues = this.graphs[0].getValues();
         let maleValues = this.graphs[1].getValues();
-        const groupValue = this.dataService.getGraph(Number(document.getElementById('yearSliderInput').value), this.getNativeTypeFromIndex(this.groupIndex));
+        const groupValue = this.dataService.getGraph(2020, this.getNativeTypeFromIndex(this.groupIndex));
         groupValue.calculateAmount();
-        let female = this.dataService.years[this.year - 2020].getPopulation(this.getNativeTypeFromIndex(this.groupIndex)).female;
-        let male = this.dataService.years[this.year - 2020].getPopulation(this.getNativeTypeFromIndex(this.groupIndex)).male;
+        let female = this.dataService.years[0].getPopulation(this.getNativeTypeFromIndex(this.groupIndex)).female;
+        let male = this.dataService.years[0].getPopulation(this.getNativeTypeFromIndex(this.groupIndex)).male;
         let amountFemale = Number(document.getElementById('femaleAmountInput').value);
         let amountMale = Number(document.getElementById('maleAmountInput').value);
-        if (this.categoryIndex === 1) {
-            for (let i = 0; i <= 100; i++) {
-                female[i].amount = amountFemale * femaleValues[i];
-                female[i].amount_generated = true;
-                male[i].amount = amountMale * maleValues[i];
-                male[i].amount_generated = true;
-            }
+        for (let i = 0; i <= 100; i++) {
+            female[i].amount = amountFemale * femaleValues[i];
+            female[i].amount_generated = true;
+            male[i].amount = amountMale * maleValues[i];
+            male[i].amount_generated = true;
         }
-        for (var userPoint in this.graphs[0].getUserPoints()) {
-            female[userPoint].amount_generated = false;
+        let userPoints = this.graphs[0].getUserPoints();
+        for (var userPoint in userPoints) {
+            female[userPoints[userPoint]].amount_generated = false;
         }
-        for (var userPoint in this.graphs[1].getUserPoints()) {
-            female[userPoint].amount_generated = false;
+        userPoints = this.graphs[1].getUserPoints();
+        for (var userPoint in userPoints) {
+            male[userPoints[userPoint]].amount_generated = false;
         }
-        this.dataService.years[this.year - 2020].getPopulation(this.getNativeTypeFromIndex(this.groupIndex)).male = male;
-        this.dataService.years[this.year - 2020].getPopulation(this.getNativeTypeFromIndex(this.groupIndex)).female = female;
+        this.dataService.years[0].getPopulation(this.getNativeTypeFromIndex(this.groupIndex)).male = male;
+        this.dataService.years[0].getPopulation(this.getNativeTypeFromIndex(this.groupIndex)).female = female;
         this.dataService.calculatePopulation(2021);
     }
     saveImmigration() {
         let femaleValues = this.graphs[0].getValues();
         let maleValues = this.graphs[1].getValues();
-        const groupValue = this.dataService.getGraph(Number(document.getElementById('yearSliderInput').value), this.getNativeTypeFromIndex(this.groupIndex));
         let female = this.dataService.years[this.year - 2020].getPopulation(this.getNativeTypeFromIndex(this.groupIndex)).female;
         let male = this.dataService.years[this.year - 2020].getPopulation(this.getNativeTypeFromIndex(this.groupIndex)).male;
         let amountFemale = Number(document.getElementById('femaleAmountInput').value);
@@ -2808,38 +2890,37 @@ let TabExampleComponent = class TabExampleComponent {
         let femaleValues = this.graphs[0].getValues();
         let female = this.dataService.years[this.year - 2020].getPopulation(this.getNativeTypeFromIndex(this.groupIndex)).female;
         for (let i = 0; i <= 100; i++) {
-            female[i].immigration = femaleValues[i];
-            female[userPoint].immigration_generated = true;
+            female[i].birthrate = femaleValues[i];
+            female[i].birthrate_generated = true;
         }
-        let userPoints = this.graphs[1].getUserPoints();
+        let userPoints = this.graphs[0].getUserPoints();
         for (var userPoint in userPoints) {
-            female[userPoints[userPoint]].immigration_generated = false;
+            female[userPoints[userPoint]].birthrate_generated = false;
         }
         this.dataService.years[this.year - 2020].getPopulation(this.getNativeTypeFromIndex(this.groupIndex)).birth_amount = Number(document.getElementById('femaleAmountInput').value);
         this.dataService.years[this.year - 2020].getPopulation(this.getNativeTypeFromIndex(this.groupIndex)).female = female;
-        this.dataService.calculatePopulation(this.year);
+        this.dataService.calculatePopulation(this.year + 1);
     }
     saveSurvive() {
         let femaleValues = this.graphs[0].getValues();
         let maleValues = this.graphs[1].getValues();
-        const groupValue = this.dataService.getGraph(Number(document.getElementById('yearSliderInput').value), this.getNativeTypeFromIndex(this.groupIndex));
         let female = this.dataService.years[this.year - 2020].getPopulation(this.getNativeTypeFromIndex(this.groupIndex)).female;
         let male = this.dataService.years[this.year - 2020].getPopulation(this.getNativeTypeFromIndex(this.groupIndex)).male;
-        let amountFemale = Number(document.getElementById('femaleAmountInput').value);
-        let amountMale = Number(document.getElementById('maleAmountInput').value);
         for (let i = 0; i <= 100; i++) {
-            female[i].immigration = amountFemale * femaleValues[i];
-            male[i].immigration = amountMale * maleValues[i];
+            female[i].surviverate = femaleValues[i];
+            male[i].surviverate = maleValues[i];
         }
-        for (var userPoint in this.graphs[0].getUserPoints()) {
-            female[userPoint].amount_generated = false;
+        let userPoints = this.graphs[0].getUserPoints();
+        for (var userPoint in userPoints) {
+            female[userPoints[userPoint]].surviverate_generated = false;
         }
-        for (var userPoint in this.graphs[1].getUserPoints()) {
-            female[userPoint].amount_generated = false;
+        userPoints = this.graphs[1].getUserPoints();
+        for (var userPoint in userPoints) {
+            male[userPoints[userPoint]].surviverate_generated = false;
         }
         this.dataService.years[this.year - 2020].getPopulation(this.getNativeTypeFromIndex(this.groupIndex)).male = male;
         this.dataService.years[this.year - 2020].getPopulation(this.getNativeTypeFromIndex(this.groupIndex)).female = female;
-        this.dataService.calculatePopulation(this.year);
+        this.dataService.calculatePopulation(this.year + 1);
     }
     saveReunification() {
         let femaleValues = this.graphs[0].getValues();
@@ -2850,18 +2931,20 @@ let TabExampleComponent = class TabExampleComponent {
         let amountFemale = Number(document.getElementById('femaleAmountInput').value);
         let amountMale = Number(document.getElementById('maleAmountInput').value);
         for (let i = 0; i <= 100; i++) {
-            female[i].immigration = amountFemale * femaleValues[i];
-            male[i].immigration = amountMale * maleValues[i];
+            female[i].reunification = amountFemale * femaleValues[i];
+            male[i].reunification = amountMale * maleValues[i];
         }
-        for (var userPoint in this.graphs[0].getUserPoints()) {
-            female[userPoint].amount_generated = false;
+        let userPoints = this.graphs[0].getUserPoints();
+        for (var userPoint in userPoints) {
+            female[userPoints[userPoint]].reunification_generated = false;
         }
-        for (var userPoint in this.graphs[1].getUserPoints()) {
-            female[userPoint].amount_generated = false;
+        userPoints = this.graphs[1].getUserPoints();
+        for (var userPoint in userPoints) {
+            male[userPoints[userPoint]].reunification_generated = false;
         }
         this.dataService.years[this.year - 2020].getPopulation(this.getNativeTypeFromIndex(this.groupIndex)).male = male;
         this.dataService.years[this.year - 2020].getPopulation(this.getNativeTypeFromIndex(this.groupIndex)).female = female;
-        this.dataService.calculatePopulation(this.year);
+        this.dataService.calculatePopulation(this.year + 1);
     }
     buildGenderDistributionGraph() {
         // diesen part muesste man jetzt nur noch auslagern auf die einzelnen websites. Entweder auf die klick action der einzelnen tabs oder auf ne unter seite die man lädt wenn man ein tab drückt. .
@@ -2872,7 +2955,7 @@ let TabExampleComponent = class TabExampleComponent {
         // als click action: man müsste dann quasi die seite aus dynamischen divs zusammenbauen die dann gefüllt werden können.
         // könnte unübersichtlch werden wenn hier alles ist.
         // const div = d3.select(document.getElementById('mat-tab-content-' + this.categoryIndex + '-' + this.groupIndex + '').children[0]);
-        let year = Number(document.getElementById('yearSliderInput').value);
+        let year = 2020;
         const groupValue = this.dataService.getGraph(year, this.getNativeTypeFromIndex(this.groupIndex));
         groupValue.calculateAmount();
         document.getElementById('femaleAmountInput').value = String(Math.round(groupValue.amountfemale));
@@ -2890,8 +2973,18 @@ let TabExampleComponent = class TabExampleComponent {
         const femaleValues = [];
         const maleValues = [];
         for (let i = 0; i <= 100; i++) {
-            femaleValues.push(groupValue.female[i].amount / groupValue.amountfemale);
-            maleValues.push(groupValue.male[i].amount / groupValue.amountmale);
+            if (groupValue.female[i].amount_generated) {
+                femaleValues.push(undefined);
+            }
+            else {
+                femaleValues.push(groupValue.female[i].amount / groupValue.amountfemale);
+            }
+            if (groupValue.male[i].amount_generated) {
+                maleValues.push(undefined);
+            }
+            else {
+                maleValues.push(groupValue.male[i].amount / groupValue.amountmale);
+            }
         }
         let editable = year == 2020;
         this.graphs[0] = new _chart_service__WEBPACK_IMPORTED_MODULE_4__["ChartService"](femaleValues, [0, 100], 767, 370, d3__WEBPACK_IMPORTED_MODULE_6__["select"](document.getElementById('genderF')).insert('svg'), document.getElementById('saveButton'), editable);
@@ -2901,7 +2994,6 @@ let TabExampleComponent = class TabExampleComponent {
         // this.setRandomValues();
     }
     buildFertilityGraph() {
-        const div = d3__WEBPACK_IMPORTED_MODULE_6__["select"](document.getElementById('mat-tab-content-' + this.categoryIndex + '-' + this.groupIndex + '').children[0]);
         const groupValue = this.dataService.getGraph(Number(document.getElementById('yearSliderInput').value), this.getNativeTypeFromIndex(this.groupIndex));
         let femaleValues = [];
         document.getElementById('femaleAmountInput').value = String(Math.round(groupValue.birth_amount));
@@ -2963,8 +3055,8 @@ let TabExampleComponent = class TabExampleComponent {
             }
         }
         document.getElementById('saveButton').style.visibility = "hidden";
-        this.graphs[0] = new _chart_service__WEBPACK_IMPORTED_MODULE_4__["ChartService"](femaleValues, [0, 100], 767, 370, d3__WEBPACK_IMPORTED_MODULE_6__["select"](document.getElementById('surviveF')).insert('svg'), document.getElementById('saveButton'));
-        this.graphs[1] = new _chart_service__WEBPACK_IMPORTED_MODULE_4__["ChartService"](maleValues, [0, 100], 767, 370, d3__WEBPACK_IMPORTED_MODULE_6__["select"](document.getElementById('surviveM')).insert('svg'), document.getElementById('saveButton'));
+        this.graphs[0] = new _chart_service__WEBPACK_IMPORTED_MODULE_4__["ChartService"](femaleValues, [0, 100], 767, 370, d3__WEBPACK_IMPORTED_MODULE_6__["select"](document.getElementById('surviveF')).insert('svg'), document.getElementById('saveButton'), true, false);
+        this.graphs[1] = new _chart_service__WEBPACK_IMPORTED_MODULE_4__["ChartService"](maleValues, [0, 100], 767, 370, d3__WEBPACK_IMPORTED_MODULE_6__["select"](document.getElementById('surviveM')).insert('svg'), document.getElementById('saveButton'), true, false);
     }
     buildReunificationGraph() {
         const groupValue = this.dataService.getGraph(Number(document.getElementById('yearSliderInput').value), this.getNativeTypeFromIndex(this.groupIndex));
