@@ -9,24 +9,11 @@ routes:
     label: Recipe
     icon: list
     hidden: true
-  - path: /catalog
-    label: Catalog
-    icon: list
-  - path: /import
-    label: Import
-    icon: settings
 permissions:
   host:
     contacts: true
     sharing: true
     files: true
-  # The Catalog tab browses a static recipe catalog served elsewhere (built by
-  # scripts/cookidump-catalog-site.mjs). Grant its exact HTTPS origin here and
-  # the app finds it via Dapp.context.permissions — nothing else to configure.
-  # `connect` lets the app fetch the catalog JSON, `images` lets it show photos.
-  # network:
-  #   connect: [https://recipes.example]
-  #   images: [https://recipes.example]
 db:
   indexes:
     - collection: recipes
@@ -141,7 +128,7 @@ entities:
         type: text
         required: true
       - id: sourceId
-        name: Import source id
+        name: Source id
         type: text
       - id: imageFileId
         name: Photo file id
