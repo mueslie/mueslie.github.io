@@ -1,0 +1,72 @@
+name: Diary
+icon: 📔
+color: '#b14e75'
+routes:
+  - path: /
+    label: Calendar
+    icon: dashboard
+  - path: /entry
+    label: Entry
+    icon: list
+  - path: /full
+    label: Reading mode
+    icon: home
+    hidden: true
+permissions:
+  host:
+    contacts: true
+    sharing: true
+bindings:
+  events:
+    - id: entry.shared
+      label: Diary entry shared
+      payload:
+        - name: date
+          type: string
+          required: true
+        - name: text
+          type: string
+          required: true
+        - name: photoDataUrl
+          type: string
+  actions:
+    - id: entry.receive
+      label: Receive diary entry
+      payload:
+        - name: date
+          type: string
+          required: true
+        - name: text
+          type: string
+          required: true
+        - name: photoDataUrl
+          type: string
+channels:
+  shares:
+    - id: diary-entry
+      label: Diary entry
+      events:
+        - entry.shared
+      actions:
+        - entry.receive
+      routes:
+        - eventId: entry.shared
+          actionId: entry.receive
+      maxParticipants: 1
+entities:
+  - id: entries
+    name: Entries
+    icon: 📔
+    color: "#b14e75"
+    fields:
+      - id: date
+        name: Date
+        type: date
+        required: true
+      - id: text
+        name: Entry
+        type: text
+        required: true
+      - id: photoDataUrl
+        name: Compressed photo
+        type: text

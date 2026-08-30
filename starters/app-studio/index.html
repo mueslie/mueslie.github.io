@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>App Studio</title><style>:root{--accent:#7c3aed}
+:root{color-scheme:light;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f7f7fb;color:#1d1d29}
+*{box-sizing:border-box}[hidden]{display:none!important}html,body{margin:0;min-height:100%;overflow-x:hidden}body{padding:max(18px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+main{width:min(860px,100%);margin:0 auto}.hero{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:22px}.hero h1{margin:0;font-size:clamp(1.65rem,7vw,2.4rem);letter-spacing:-.045em}.hero p{margin:7px 0 0;color:#686879;line-height:1.5}.card{background:#fff;border:1px solid #e8e7ef;border-radius:18px;padding:18px;box-shadow:0 10px 32px rgba(35,31,66,.06);margin-bottom:16px}.row{display:flex;gap:10px;align-items:center}.wrap{flex-wrap:wrap}.grow{flex:1;min-width:0}.stack{display:grid;gap:12px}.muted{color:#717184;font-size:.9rem}.empty{text-align:center;color:#78788a;padding:30px 12px}.pill{display:inline-flex;padding:5px 9px;border-radius:999px;background:#f0eff8;color:#55536a;font-size:.78rem;font-weight:700}.notice{padding:11px 13px;border-radius:12px;background:#fff7df;color:#705a16;font-size:.84rem;line-height:1.45}.error{color:#a32222}
+button,input,textarea,select{font:inherit;font-size:16px}button{min-height:44px;border:0;border-radius:12px;padding:10px 15px;font-weight:750;cursor:pointer;background:var(--accent);color:white}button.secondary{background:#eeedf5;color:#333244}button.ghost{background:transparent;color:#55536a;border:1px solid #dedde7}button.danger{background:#fff0f0;color:#a12626}button:disabled{opacity:.55;cursor:not-allowed}input,textarea,select{width:100%;min-height:44px;border:1px solid #d9d8e2;border-radius:11px;padding:10px 12px;background:white;color:#20202b}textarea{min-height:110px;resize:vertical}label{display:grid;gap:6px;font-size:.86rem;font-weight:700;color:#505062}label.check{display:flex;align-items:center;gap:9px}label.check input{width:22px;min-height:22px}
+.nav{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}.nav button{white-space:nowrap}
+.item{display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:1px solid #efedf4}.item:last-child{border-bottom:0}.item-title{font-weight:750;overflow-wrap:anywhere}.actions{display:flex;gap:7px;flex-wrap:wrap}.actions button{min-height:40px;padding:7px 11px}
+.thumb{width:56px;height:56px;object-fit:cover;border-radius:12px;background:#eeedf5;flex:none}.thumb.placeholder{display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}.gcard{display:block;width:100%;text-align:left;padding:0;background:#fff;border:1px solid #e8e7ef;border-radius:14px;overflow:hidden;color:inherit;font-weight:600}.gcard img,.gcard .gph{width:100%;aspect-ratio:4/3;object-fit:cover;display:flex;align-items:center;justify-content:center;font-size:2rem;background:#eeedf5}.gcard .gtitle{padding:9px 11px;overflow-wrap:anywhere}
+.field-row{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px dashed #efedf4}.field-row:last-child{border-bottom:0}.badge{display:inline-flex;padding:3px 8px;border-radius:999px;background:#efe9fd;color:#5b34b8;font-size:.74rem;font-weight:750}.badge.req{background:#fdeaea;color:#a12626}
+.subcard{border:1px solid #eceaf3;border-radius:14px;padding:13px;margin-top:12px;background:#fbfbfe}.split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.preview{max-width:180px;max-height:180px;border-radius:12px;display:block}
+@media(max-width:560px){body{padding-left:12px;padding-right:12px}.card{padding:15px;border-radius:15px}.hero{display:block}.split{grid-template-columns:1fr}.row.mobile-stack{align-items:stretch;flex-direction:column}.row.mobile-stack button{width:100%}.actions button{flex:1}}
+</style></head>
+<body><main>
+<header class="hero"><div><h1 id="app-name">App Studio</h1><p>Design your own app: entities, fields and screens — then use it right away.</p></div><span id="summary" class="pill"></span></header>
+<nav class="nav" id="main-nav"><button type="button" data-route="/">App</button><button type="button" class="secondary" data-route="/studio">Studio</button></nav>
+<section id="app-view">
+  <div class="nav" id="screen-tabs"></div>
+  <div id="screen-body"></div>
+  <section id="editor" class="card stack" hidden></section>
+</section>
+<section id="studio-view" hidden></section>
+</main><script>
+const esc=(value)=>String(value??'').replace(/[&<>"']/g,(char)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const FIELD_TYPES=[['text','Text'],['longtext','Long text'],['number','Number'],['checkbox','Checkbox'],['date','Date'],['select','Choice'],['image','Picture']];
+const SCREEN_TYPES=[['list','List — browse, add, edit and delete'],['form','Form — quick add'],['gallery','Gallery — picture cards']];
+const typeLabel=(list,id)=>{const found=list.find((pair)=>pair[0]===id);return found?found[1].split(' — ')[0]:id;};
+const collection=(entityId)=>'records_'+entityId;
+
+let def={entities:[],screens:[]};
+let role='viewer';let canEdit=false;let route='/';
+let activeScreenId=null;let editing=null;let search='';
+let recordsByEntity={};let storeSubs={};
+let entityDraft={name:'',icon:''};let fieldDrafts={};let screenDraft={name:'',icon:'',type:'list',entityId:'',titleFieldId:'',imageFieldId:''};
+const fileUrls=new Map();
+
+function normalizeDef(raw){
+  const out={entities:[],screens:[]};
+  if(raw&&typeof raw==='object'){
+    if(Array.isArray(raw.entities))out.entities=raw.entities.filter((entity)=>entity&&typeof entity==='object'&&typeof entity.id==='string'&&typeof entity.name==='string').map((entity)=>({id:entity.id,name:entity.name,icon:typeof entity.icon==='string'?entity.icon:'',fields:Array.isArray(entity.fields)?entity.fields.filter((field)=>field&&typeof field.id==='string'&&typeof field.name==='string'&&FIELD_TYPES.some((pair)=>pair[0]===field.type)).map((field)=>({id:field.id,name:field.name,type:field.type,required:field.required===true,options:Array.isArray(field.options)?field.options.map(String):[]})):[]}));
+    if(Array.isArray(raw.screens))out.screens=raw.screens.filter((screen)=>screen&&typeof screen==='object'&&typeof screen.id==='string'&&typeof screen.name==='string'&&SCREEN_TYPES.some((pair)=>pair[0]===screen.type)).map((screen)=>({id:screen.id,name:screen.name,icon:typeof screen.icon==='string'?screen.icon:'',type:screen.type,entityId:typeof screen.entityId==='string'?screen.entityId:'',titleFieldId:typeof screen.titleFieldId==='string'?screen.titleFieldId:'',imageFieldId:typeof screen.imageFieldId==='string'?screen.imageFieldId:''}));
+  }
+  return out;
+}
+const entityById=(id)=>def.entities.find((entity)=>entity.id===id);
+async function saveDef(next){def=normalizeDef(next);render();try{await $data.set('appdef',def);}catch(error){setStudioStatus('Could not save: '+(error&&error.message||error),true);}}
+
+function syncSubscriptions(){
+  def.entities.forEach(async(entity)=>{
+    if(storeSubs[entity.id])return;
+    storeSubs[entity.id]=true;
+    storeSubs[entity.id]=await $store.subscribe(collection(entity.id),{},(rows)=>{recordsByEntity[entity.id]=Array.isArray(rows)?rows:[];render();});
+  });
+}
+const rowsFor=(entityId)=>{
+  const rows=(recordsByEntity[entityId]||[]).slice();
+  rows.sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));
+  return rows;
+};
+
+function fileUrl(fileId){
+  if(!window.$files)return Promise.resolve(null);
+  if(!fileUrls.has(fileId))fileUrls.set(fileId,$files.objectUrl(fileId).catch(()=>null));
+  return fileUrls.get(fileId);
+}
+function hydrateImages(){
+  document.querySelectorAll('img[data-file]').forEach((img)=>{
+    const id=img.dataset.file;
+    if(img.dataset.hydrated===id)return;
+    img.dataset.hydrated=id;
+    fileUrl(id).then((url)=>{if(url&&img.dataset.file===id)img.src=url;});
+  });
+}
+function downscale(file){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();const url=URL.createObjectURL(file);
+    img.onload=()=>{
+      const max=1280;const scale=Math.min(1,max/Math.max(img.width||1,img.height||1));
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.max(1,Math.round((img.width||1)*scale));canvas.height=Math.max(1,Math.round((img.height||1)*scale));
+      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+      canvas.toBlob((blob)=>{URL.revokeObjectURL(url);blob?resolve(blob):reject(new Error('Could not encode picture.'));},'image/jpeg',0.85);
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Unreadable picture.'));};
+    img.src=url;
+  });
+}
+async function uploadImage(file){
+  if(!window.$files)throw new Error('Pictures are unavailable in this app.');
+  let blob=file;
+  if(file.size>300*1024){try{blob=await downscale(file);}catch{blob=file;}}
+  if(blob.size>3*1024*1024)throw new Error('Picture is too large.');
+  const bytes=await blob.arrayBuffer();
+  const added=await $files.add({name:file.name||'picture.jpg',mime:blob.type||file.type||'image/jpeg',data:bytes});
+  return added&&added.id?added.id:null;
+}
+
+// ───── rendering ─────
+function render(){
+  document.querySelectorAll('#main-nav [data-route]').forEach((button)=>button.className=button.dataset.route===route?'':'secondary');
+  const studio=route==='/studio';
+  document.getElementById('studio-view').hidden=!studio;
+  document.getElementById('app-view').hidden=studio;
+  document.getElementById('summary').textContent=def.screens.length+' screen'+(def.screens.length===1?'':'s')+' · '+def.entities.length+' entit'+(def.entities.length===1?'y':'ies');
+  if(studio){renderStudio();}
+  else{
+    document.getElementById('screen-tabs').hidden=!!editing;
+    document.getElementById('screen-body').hidden=!!editing;
+    document.getElementById('editor').hidden=!editing;
+    if(!editing)renderApp();
+  }
+  hydrateImages();
+}
+
+function recordTitle(entity,screen,record){
+  const pick=(fieldId)=>{const field=entity.fields.find((candidate)=>candidate.id===fieldId);const value=field?record[field.id]:null;return value===null||value===undefined||value===''?null:String(value);};
+  if(screen&&screen.titleFieldId){const chosen=pick(screen.titleFieldId);if(chosen)return chosen;}
+  for(const field of entity.fields){if(field.type==='image'||field.type==='checkbox')continue;const value=record[field.id];if(value!==null&&value!==undefined&&value!=='')return String(value);}
+  return 'Untitled';
+}
+function recordImage(entity,screen,record){
+  if(screen&&screen.imageFieldId&&record[screen.imageFieldId])return record[screen.imageFieldId];
+  for(const field of entity.fields){if(field.type==='image'&&record[field.id])return record[field.id];}
+  return null;
+}
+function subtitleParts(entity,screen,record){
+  const skip=new Set([screen&&screen.titleFieldId,screen&&screen.imageFieldId]);
+  const parts=[];
+  for(const field of entity.fields){
+    if(parts.length>=3)break;
+    if(skip.has(field.id)||field.type==='image'||field.type==='longtext')continue;
+    const value=record[field.id];
+    if(value===null||value===undefined||value==='')continue;
+    parts.push(esc(field.name)+': '+(field.type==='checkbox'?(value?'yes':'no'):esc(value)));
+  }
+  return parts;
+}
+
+function fieldInput(field,value){
+  const id='f_'+field.id;const req=field.required?' required':'';
+  if(field.type==='longtext')return '<label>'+esc(field.name)+'<textarea id="'+id+'" maxlength="4000"'+req+'>'+esc(value??'')+'</textarea></label>';
+  if(field.type==='number')return '<label>'+esc(field.name)+'<input id="'+id+'" type="number" step="any" value="'+esc(value??'')+'"'+req+'></label>';
+  if(field.type==='checkbox')return '<label class="check"><input id="'+id+'" type="checkbox"'+(value?' checked':'')+'>'+esc(field.name)+'</label>';
+  if(field.type==='date')return '<label>'+esc(field.name)+'<input id="'+id+'" type="date" value="'+esc(value??'')+'"'+req+'></label>';
+  if(field.type==='select')return '<label>'+esc(field.name)+'<select id="'+id+'"'+req+'><option value="">—</option>'+field.options.map((option)=>'<option value="'+esc(option)+'"'+(value===option?' selected':'')+'>'+esc(option)+'</option>').join('')+'</select></label>';
+  if(field.type==='image')return '<label>'+esc(field.name)+'<input id="'+id+'" type="file" accept="image/*" data-preview="p_'+esc(field.id)+'"></label>'+(value?'<img class="preview" data-file="'+esc(value)+'" alt="">':'')+'<img class="preview" id="p_'+esc(field.id)+'" alt="" hidden>';
+  return '<label>'+esc(field.name)+'<input id="'+id+'" maxlength="500" value="'+esc(value??'')+'"'+req+'></label>';
+}
+
+function renderApp(){
+  const tabs=document.getElementById('screen-tabs');const body=document.getElementById('screen-body');
+  if(!def.screens.length){
+    tabs.innerHTML='';
+    body.innerHTML='<div class="card empty">No screens yet.'+(canEdit?' Head to the Studio to design your app.<div style="margin-top:12px"><button type="button" data-action="go-studio">Open Studio</button></div>':' Ask an owner or editor to design screens in the Studio.')+'</div>';
+    return;
+  }
+  if(!def.screens.some((screen)=>screen.id===activeScreenId))activeScreenId=def.screens[0].id;
+  tabs.innerHTML=def.screens.map((screen)=>'<button type="button" class="'+(screen.id===activeScreenId?'':'secondary')+'" data-action="screen-tab" data-screen="'+esc(screen.id)+'">'+esc((screen.icon?screen.icon+' ':'')+screen.name)+'</button>').join('');
+  const screen=def.screens.find((candidate)=>candidate.id===activeScreenId);
+  const entity=entityById(screen.entityId);
+  if(!entity){body.innerHTML='<div class="card empty">This screen points at a deleted entity. Fix it in the Studio.</div>';return;}
+  if(screen.type==='form'){
+    body.innerHTML='<div class="card stack">'+(canEdit?entity.fields.map((field)=>fieldInput(field,null)).join('')+'<button type="button" data-action="save-record" data-entity="'+esc(entity.id)+'" data-mode="form">Save '+esc(entity.name)+'</button>':'<div class="empty">Only owners and editors can add entries.</div>')+'<div id="screen-status" class="muted" aria-live="polite"></div></div>';
+    return;
+  }
+  const rows=rowsFor(entity.id).filter((record)=>{
+    if(!search)return true;
+    const haystack=entity.fields.map((field)=>String(record[field.id]??'')).join(' ').toLowerCase();
+    return haystack.includes(search.toLowerCase());
+  });
+  const addButton=canEdit?'<button type="button" data-action="open-add" data-entity="'+esc(entity.id)+'">Add</button>':'';
+  const searchBox='<div class="row"><input id="search" class="grow" placeholder="Search…" value="'+esc(search)+'">'+addButton+'</div>';
+  if(screen.type==='gallery'){
+    body.innerHTML='<div class="card stack">'+searchBox+(rows.length?'<div class="gallery">'+rows.map((record)=>{
+      const image=recordImage(entity,screen,record);
+      const inner=(image?'<img data-file="'+esc(image)+'" alt="">':'<div class="gph">'+esc(entity.icon||'🖼️')+'</div>')+'<div class="gtitle">'+esc(recordTitle(entity,screen,record))+'</div>';
+      return canEdit?'<button type="button" class="gcard" data-action="edit-record" data-entity="'+esc(entity.id)+'" data-record="'+esc(record.id)+'">'+inner+'</button>':'<div class="gcard">'+inner+'</div>';
+    }).join('')+'</div>':'<div class="empty">'+(search?'No matches.':'Nothing here yet.')+'</div>')+'<div id="screen-status" class="muted" aria-live="polite"></div></div>';
+    return;
+  }
+  body.innerHTML='<div class="card">'+searchBox+(rows.length?rows.map((record)=>{
+    const image=recordImage(entity,screen,record);
+    return '<article class="item">'+(image?'<img class="thumb" data-file="'+esc(image)+'" alt="">':'')+'<div class="grow"><div class="item-title">'+esc(recordTitle(entity,screen,record))+'</div><div class="muted">'+subtitleParts(entity,screen,record).join(' · ')+'</div></div>'+(canEdit?'<div class="actions"><button type="button" class="secondary" data-action="edit-record" data-entity="'+esc(entity.id)+'" data-record="'+esc(record.id)+'">Edit</button><button type="button" class="danger" data-action="del-record" data-entity="'+esc(entity.id)+'" data-record="'+esc(record.id)+'">Delete</button></div>':'')+'</article>';
+  }).join(''):'<div class="empty">'+(search?'No matches.':'Nothing here yet.')+'</div>')+'<div id="screen-status" class="muted" aria-live="polite"></div></div>';
+}
+
+function renderEditor(){
+  const container=document.getElementById('editor');
+  if(!editing){container.innerHTML='';return;}
+  const entity=entityById(editing.entityId);
+  if(!entity){editing=null;container.innerHTML='';return;}
+  const record=editing.recordId?rowsFor(entity.id).find((candidate)=>candidate.id===editing.recordId)||{}:{};
+  container.innerHTML='<div class="row"><h2 class="grow" style="margin:0">'+(editing.recordId?'Edit':'New')+' '+esc(entity.name)+'</h2><button type="button" class="ghost" data-action="cancel-edit">Cancel</button></div>'
+    +entity.fields.map((field)=>fieldInput(field,record[field.id])).join('')
+    +'<div class="row mobile-stack"><button type="button" data-action="save-record" data-entity="'+esc(entity.id)+'" data-mode="editor">Save</button></div><div id="editor-status" class="muted" aria-live="polite"></div>';
+  hydrateImages();
+}
+
+function setStatus(text,isError){const el=document.getElementById(editing?'editor-status':'screen-status');if(el){el.textContent=text;el.className=isError?'error':'muted';}}
+function setStudioStatus(text,isError){const el=document.getElementById('studio-status');if(el){el.textContent=text;el.className=isError?'error':'muted';}}
+
+function fieldDraft(entityId){if(!fieldDrafts[entityId])fieldDrafts[entityId]={name:'',type:'text',required:false,options:''};return fieldDrafts[entityId];}
+function renderStudio(){
+  const view=document.getElementById('studio-view');
+  if(!canEdit){
+    view.innerHTML='<div class="card"><div class="notice">Only owners and editors can change the app design.</div>'+(def.entities.length?def.entities.map((entity)=>'<div class="subcard"><strong>'+esc((entity.icon?entity.icon+' ':'')+entity.name)+'</strong><div class="muted">'+entity.fields.map((field)=>esc(field.name)).join(', ')+'</div></div>').join(''):'<div class="empty">Nothing designed yet.</div>')+'</div>';
+    return;
+  }
+  const entitiesHtml=def.entities.map((entity)=>{
+    const draft=fieldDraft(entity.id);
+    const count=(recordsByEntity[entity.id]||[]).length;
+    return '<div class="subcard"><div class="row"><strong class="grow">'+esc((entity.icon?entity.icon+' ':'')+entity.name)+'</strong><span class="pill">'+count+' record'+(count===1?'':'s')+'</span><button type="button" class="danger" data-action="del-entity" data-entity="'+esc(entity.id)+'">Delete</button></div>'
+      +(entity.fields.length?entity.fields.map((field)=>'<div class="field-row"><span class="grow">'+esc(field.name)+'</span><span class="badge">'+esc(typeLabel(FIELD_TYPES,field.type))+'</span>'+(field.required?'<span class="badge req">required</span>':'')+'<button type="button" class="ghost" data-action="del-field" data-entity="'+esc(entity.id)+'" data-field="'+esc(field.id)+'">Remove</button></div>').join(''):'<div class="muted" style="padding:8px 0">No fields yet.</div>')
+      +'<div class="stack" style="margin-top:10px"><div class="split"><label>Field name<input data-fdraft="name" data-entity="'+esc(entity.id)+'" value="'+esc(draft.name)+'" maxlength="60" placeholder="Title"></label><label>Type<select data-fdraft="type" data-entity="'+esc(entity.id)+'">'+FIELD_TYPES.map((pair)=>'<option value="'+pair[0]+'"'+(draft.type===pair[0]?' selected':'')+'>'+pair[1]+'</option>').join('')+'</select></label></div>'
+      +(draft.type==='select'?'<label>Choices (comma-separated)<input data-fdraft="options" data-entity="'+esc(entity.id)+'" value="'+esc(draft.options)+'" placeholder="Low, Medium, High"></label>':'')
+      +'<div class="row wrap"><label class="check grow"><input type="checkbox" data-fdraft="required" data-entity="'+esc(entity.id)+'"'+(draft.required?' checked':'')+'>Required</label><button type="button" class="secondary" data-action="add-field" data-entity="'+esc(entity.id)+'">Add field</button></div></div></div>';
+  }).join('');
+  const entityOptions=def.entities.map((entity)=>'<option value="'+esc(entity.id)+'"'+(screenDraft.entityId===entity.id?' selected':'')+'>'+esc(entity.name)+'</option>').join('');
+  const draftEntity=entityById(screenDraft.entityId)||def.entities[0];
+  const titleOptions=draftEntity?draftEntity.fields.filter((field)=>field.type!=='image').map((field)=>'<option value="'+esc(field.id)+'"'+(screenDraft.titleFieldId===field.id?' selected':'')+'>'+esc(field.name)+'</option>').join(''):'';
+  const imageFields=draftEntity?draftEntity.fields.filter((field)=>field.type==='image'):[];
+  const imageOptions=imageFields.map((field)=>'<option value="'+esc(field.id)+'"'+(screenDraft.imageFieldId===field.id?' selected':'')+'>'+esc(field.name)+'</option>').join('');
+  const screensHtml=def.screens.map((screen,index)=>{
+    const entity=entityById(screen.entityId);
+    return '<div class="field-row"><span class="grow">'+esc((screen.icon?screen.icon+' ':'')+screen.name)+' <span class="muted">'+esc(typeLabel(SCREEN_TYPES,screen.type))+' · '+esc(entity?entity.name:'missing entity')+'</span></span>'
+      +'<button type="button" class="ghost" data-action="move-screen" data-screen="'+esc(screen.id)+'" data-dir="-1"'+(index===0?' disabled':'')+'>↑</button>'
+      +'<button type="button" class="ghost" data-action="move-screen" data-screen="'+esc(screen.id)+'" data-dir="1"'+(index===def.screens.length-1?' disabled':'')+'>↓</button>'
+      +'<button type="button" class="danger" data-action="del-screen" data-screen="'+esc(screen.id)+'">Delete</button></div>';
+  }).join('');
+  view.innerHTML='<div class="card"><h2 style="margin:0 0 4px">Entities</h2><p class="muted" style="margin:0 0 8px">What kind of things does your app keep? Each entity gets its own records.</p>'
+    +(def.entities.length?entitiesHtml:'<div class="empty">No entities yet — add one below.</div>')
+    +'<div class="row mobile-stack" style="margin-top:12px"><input data-draft="entity-icon" style="max-width:90px" maxlength="4" placeholder="📦" value="'+esc(entityDraft.icon)+'" aria-label="Entity icon"><input class="grow" data-draft="entity-name" maxlength="60" placeholder="Entity name, e.g. Books" value="'+esc(entityDraft.name)+'"><button type="button" data-action="add-entity">Add entity</button></div></div>'
+    +'<div class="card"><h2 style="margin:0 0 4px">Screens</h2><p class="muted" style="margin:0 0 8px">Screens are how members use the app: browse a list, fill a form, or flip through a gallery.</p>'
+    +(def.screens.length?screensHtml:'<div class="empty">No screens yet.</div>')
+    +(def.entities.length?'<div class="stack" style="margin-top:12px"><div class="split"><label>Screen name<input data-sdraft="name" maxlength="60" placeholder="All books" value="'+esc(screenDraft.name)+'"></label><label>Icon<input data-sdraft="icon" maxlength="4" placeholder="📚" value="'+esc(screenDraft.icon)+'"></label></div><div class="split"><label>Type<select data-sdraft="type">'+SCREEN_TYPES.map((pair)=>'<option value="'+pair[0]+'"'+(screenDraft.type===pair[0]?' selected':'')+'>'+pair[1]+'</option>').join('')+'</select></label><label>Entity<select data-sdraft="entityId">'+entityOptions+'</select></label></div><div class="split"><label>Title field<select data-sdraft="titleFieldId"><option value="">Automatic</option>'+titleOptions+'</select></label><label>Picture field<select data-sdraft="imageFieldId"'+(imageFields.length?'':' disabled')+'><option value="">'+(imageFields.length?'Automatic':'No picture fields')+'</option>'+imageOptions+'</select></label></div><div class="row"><button type="button" data-action="add-screen">Add screen</button></div></div>':'<div class="notice" style="margin-top:12px">Add an entity first, then create screens for it.</div>')
+    +'<div id="studio-status" class="muted" aria-live="polite" style="margin-top:10px"></div></div>';
+}
+
+// ───── actions ─────
+async function collectValues(entity,existing){
+  const out=existing?{...existing}:{};
+  for(const field of entity.fields){
+    const el=document.getElementById('f_'+field.id);
+    if(!el)continue;
+    if(field.type==='checkbox'){out[field.id]=el.checked;continue;}
+    if(field.type==='image'){
+      const file=el.files&&el.files[0];
+      if(file){setStatus('Uploading picture…');out[field.id]=await uploadImage(file);}
+      if(field.required&&!out[field.id])throw new Error('"'+field.name+'" needs a picture.');
+      continue;
+    }
+    if(typeof el.reportValidity==='function'&&!el.reportValidity())throw {silent:true};
+    let value=field.type==='number'?(el.value===''?null:Number(el.value)):String(el.value).trim();
+    if(field.required&&(value===null||value===''))throw new Error('"'+field.name+'" is required.');
+    out[field.id]=(value===''||value===null)?null:value;
+  }
+  return out;
+}
+async function saveRecord(entityId,mode){
+  const entity=entityById(entityId);
+  if(!entity)return;
+  let values;
+  try{values=await collectValues(entity,editing&&editing.recordId?rowsFor(entityId).find((candidate)=>candidate.id===editing.recordId):null);}
+  catch(error){if(!error||!error.silent)setStatus(error&&error.message||'Could not save.',true);return;}
+  try{
+    if(editing&&editing.recordId){const{id:_omit,...data}=values;await $store.update(collection(entityId),editing.recordId,data);}
+    else{values.createdAt=Date.now();await $store.create(collection(entityId),values);}
+  }catch(error){setStatus('Could not save: '+(error&&error.message||error),true);return;}
+  if(mode==='form'){setStatus('Saved.');renderApp();hydrateImages();const status=document.getElementById('screen-status');if(status)status.textContent='Saved.';}
+  else{editing=null;render();}
+}
+const actions={
+  'go-studio':()=>$router.navigate('/studio'),
+  'screen-tab':(data)=>{activeScreenId=data.screen;search='';render();},
+  'open-add':(data)=>{editing={entityId:data.entity,recordId:null};render();renderEditor();},
+  'edit-record':(data)=>{editing={entityId:data.entity,recordId:data.record};render();renderEditor();},
+  'cancel-edit':()=>{editing=null;render();},
+  'del-record':async(data)=>{if(!confirm('Delete this entry?'))return;await $store.delete(collection(data.entity),data.record);},
+  'save-record':(data)=>saveRecord(data.entity,data.mode),
+  'add-entity':()=>{
+    const name=entityDraft.name.trim();
+    if(!name){setStudioStatus('Give the entity a name first.',true);return;}
+    const next={...def,entities:[...def.entities,{id:uid(),name,icon:entityDraft.icon.trim(),fields:[]}]};
+    entityDraft={name:'',icon:''};
+    saveDef(next);
+  },
+  'del-entity':(data)=>{
+    const entity=entityById(data.entity);
+    if(!entity)return;
+    if(!confirm('Delete entity "'+entity.name+'" and its screens? Its records stay stored but become unreachable.'))return;
+    if(typeof storeSubs[data.entity]==='function')storeSubs[data.entity]();
+    delete storeSubs[data.entity];delete recordsByEntity[data.entity];
+    saveDef({entities:def.entities.filter((candidate)=>candidate.id!==data.entity),screens:def.screens.filter((screen)=>screen.entityId!==data.entity)});
+  },
+  'add-field':(data)=>{
+    const entity=entityById(data.entity);const draft=fieldDraft(data.entity);
+    const name=draft.name.trim();
+    if(!entity)return;
+    if(!name){setStudioStatus('Give the field a name first.',true);return;}
+    const options=draft.type==='select'?draft.options.split(',').map((option)=>option.trim()).filter(Boolean):[];
+    if(draft.type==='select'&&!options.length){setStudioStatus('A choice field needs at least one choice.',true);return;}
+    const field={id:uid(),name,type:draft.type,required:draft.required,options};
+    fieldDrafts[data.entity]={name:'',type:draft.type,required:false,options:''};
+    saveDef({...def,entities:def.entities.map((candidate)=>candidate.id===entity.id?{...candidate,fields:[...candidate.fields,field]}:candidate)});
+  },
+  'del-field':(data)=>{
+    const entity=entityById(data.entity);
+    if(!entity)return;
+    const field=entity.fields.find((candidate)=>candidate.id===data.field);
+    if(field&&!confirm('Remove field "'+field.name+'"? Existing values stay stored but are no longer shown.'))return;
+    saveDef({...def,entities:def.entities.map((candidate)=>candidate.id===entity.id?{...candidate,fields:candidate.fields.filter((existing)=>existing.id!==data.field)}:candidate),screens:def.screens.map((screen)=>({...screen,titleFieldId:screen.titleFieldId===data.field?'':screen.titleFieldId,imageFieldId:screen.imageFieldId===data.field?'':screen.imageFieldId}))});
+  },
+  'add-screen':()=>{
+    const name=screenDraft.name.trim();
+    const entity=entityById(screenDraft.entityId)||def.entities[0];
+    if(!entity){setStudioStatus('Add an entity first.',true);return;}
+    if(!name){setStudioStatus('Give the screen a name first.',true);return;}
+    const screen={id:uid(),name,icon:screenDraft.icon.trim(),type:screenDraft.type,entityId:entity.id,titleFieldId:screenDraft.titleFieldId,imageFieldId:screenDraft.imageFieldId};
+    screenDraft={name:'',icon:'',type:screenDraft.type,entityId:entity.id,titleFieldId:'',imageFieldId:''};
+    activeScreenId=screen.id;
+    saveDef({...def,screens:[...def.screens,screen]});
+  },
+  'del-screen':(data)=>{
+    const screen=def.screens.find((candidate)=>candidate.id===data.screen);
+    if(screen&&!confirm('Delete screen "'+screen.name+'"?'))return;
+    saveDef({...def,screens:def.screens.filter((candidate)=>candidate.id!==data.screen)});
+  },
+  'move-screen':(data)=>{
+    const index=def.screens.findIndex((candidate)=>candidate.id===data.screen);
+    const target=index+Number(data.dir);
+    if(index<0||target<0||target>=def.screens.length)return;
+    const screens=def.screens.slice();
+    const[moved]=screens.splice(index,1);
+    screens.splice(target,0,moved);
+    saveDef({...def,screens});
+  },
+};
+document.addEventListener('click',(event)=>{
+  const target=event.target.closest('[data-action]');
+  if(!target||target.disabled)return;
+  const handler=actions[target.dataset.action];
+  if(!handler)return;
+  Promise.resolve(handler(target.dataset)).catch((error)=>setStatus(error&&error.message||'Something went wrong.',true));
+});
+function updateDraft(event){
+  const el=event.target;
+  if(el.id==='search'){search=el.value;renderApp();hydrateImages();const box=document.getElementById('search');if(box){box.focus();box.setSelectionRange(box.value.length,box.value.length);}return;}
+  if(el.dataset.preview){
+    const file=el.files&&el.files[0];const img=document.getElementById(el.dataset.preview);
+    if(img&&file){img.src=URL.createObjectURL(file);img.hidden=false;}
+    return;
+  }
+  if(el.dataset.draft==='entity-name')entityDraft.name=el.value;
+  else if(el.dataset.draft==='entity-icon')entityDraft.icon=el.value;
+  else if(el.dataset.fdraft){
+    const draft=fieldDraft(el.dataset.entity);
+    if(el.dataset.fdraft==='required')draft.required=el.checked;
+    else draft[el.dataset.fdraft]=el.value;
+    if(el.dataset.fdraft==='type'&&event.type==='change')renderStudio();
+  }
+  else if(el.dataset.sdraft){
+    screenDraft[el.dataset.sdraft]=el.value;
+    if(el.dataset.sdraft==='entityId'&&event.type==='change'){screenDraft.titleFieldId='';screenDraft.imageFieldId='';renderStudio();}
+  }
+}
+document.addEventListener('input',updateDraft);
+document.addEventListener('change',updateDraft);
+document.getElementById('main-nav').addEventListener('click',(event)=>{const target=event.target.closest('[data-route]');if(target)$router.navigate(target.dataset.route);});
+
+Dapp.onReady(async(context)=>{
+  const ctx=context||Dapp.context||{};
+  role=ctx.role||'viewer';
+  canEdit=role==='owner'||role==='editor';
+  const meta=ctx.meta;
+  if(meta&&meta.name)document.getElementById('app-name').textContent=meta.name;
+  route=$router.current();
+  $router.subscribe((next)=>{route=next;render();});
+  await $data.subscribe((state)=>{
+    def=normalizeDef(state?state['appdef']:null);
+    syncSubscriptions();
+    if(editing&&!entityById(editing.entityId))editing=null;
+    render();
+  });
+  render();
+});
+</script></body></html>

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>To-Do List</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div>
+        <h1>To-Do List</h1>
+        <p>A small shared list that stays useful offline.</p>
+      </div>
+      <span id="count" class="pill">0 tasks</span>
+    </header>
+
+    <nav class="nav">
+      <button type="button" class="secondary" data-route="/">Open</button>
+      <button type="button" class="secondary" data-route="/done">Completed</button>
+    </nav>
+
+    <div id="task-form" class="card stack">
+      <label>Task<input id="title" maxlength="160" required placeholder="What needs doing?"></label>
+      <label>Due date (optional)<input id="due" type="date"></label>
+      <button id="add-task" type="button">Add task</button>
+      <div id="status" class="muted" aria-live="polite"></div>
+    </div>
+
+    <section class="card">
+      <div id="tasks"></div>
+    </section>
+  </main>
+
+  <!--
+    The app is split into plain files. The runtime inlines every linked local
+    file into the sandbox at boot (nothing is fetched, external scripts never
+    load), and scripts run in document order as classic scripts — there are no
+    ES modules, so the files share code through the `Todo` global namespace.
+  -->
+  <script src="app/tasks.js"></script>
+  <script src="app/view.js"></script>
+  <script src="app/main.js"></script>
+</body>
+</html>

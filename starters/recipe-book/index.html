@@ -1,0 +1,1622 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Recipe Book</title>
+  <style>
+    :root {
+      --accent: #c26a1b
+    }
+
+    :root {
+      color-scheme: light;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f7f7fb;
+      color: #1d1d29
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    [hidden] {
+      display: none !important
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      overflow-x: hidden
+    }
+
+    body {
+      padding: max(18px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left))
+    }
+
+    main {
+      width: min(860px, 100%);
+      margin: 0 auto
+    }
+
+    .hero {
+      margin-bottom: 18px
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(1.65rem, 7vw, 2.4rem);
+      letter-spacing: -.045em
+    }
+
+    .hero p {
+      margin: 7px 0 0;
+      color: #686879;
+      line-height: 1.5
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e8e7ef;
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 10px 32px rgba(35, 31, 66, .06);
+      margin-bottom: 16px
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center
+    }
+
+    .wrap {
+      flex-wrap: wrap
+    }
+
+    .grow {
+      flex: 1;
+      min-width: 0
+    }
+
+    .stack {
+      display: grid;
+      gap: 12px
+    }
+
+    .muted {
+      color: #717184;
+      font-size: .9rem
+    }
+
+    .empty {
+      text-align: center;
+      color: #78788a;
+      padding: 30px 12px
+    }
+
+    .pill {
+      display: inline-flex;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: #f0eff8;
+      color: #55536a;
+      font-size: .78rem;
+      font-weight: 700
+    }
+
+    .notice {
+      padding: 11px 13px;
+      border-radius: 12px;
+      background: #fff7df;
+      color: #705a16;
+      font-size: .84rem;
+      line-height: 1.45
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+      font-size: 16px
+    }
+
+    button {
+      min-height: 44px;
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 15px;
+      font-weight: 750;
+      cursor: pointer;
+      background: var(--accent);
+      color: white
+    }
+
+    button.secondary {
+      background: #eeedf5;
+      color: #333244
+    }
+
+    button.ghost {
+      background: transparent;
+      color: #55536a;
+      border: 1px solid #dedde7
+    }
+
+    button.danger {
+      background: #c22a2a;
+      color: white
+    }
+
+    button.fav {
+      background: transparent;
+      border: 0;
+      min-height: auto;
+      padding: 2px 6px;
+      font-size: 1.35rem;
+      line-height: 1;
+      color: #c9c7d4
+    }
+
+    button.fav.on {
+      color: #e8a013
+    }
+
+    button:disabled {
+      opacity: .55;
+      cursor: not-allowed
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid #d9d8e2;
+      border-radius: 11px;
+      padding: 10px 12px;
+      background: white;
+      color: #20202b
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      font-size: .86rem;
+      font-weight: 700;
+      color: #505062
+    }
+
+    .item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      text-align: left;
+      padding: 12px;
+      border: 1px solid #efedf4;
+      border-radius: 14px;
+      background: #fff;
+      /* .item rows are <button>s — undo the accent button base (white text) */
+      color: #1d1d29;
+      font-weight: 400;
+      cursor: pointer
+    }
+
+    .item:hover {
+      border-color: #dcd9ea
+    }
+
+    .thumb {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      object-fit: cover;
+      flex: none;
+      background: #f4ede2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem
+    }
+
+    .item-title {
+      font-weight: 750;
+      overflow-wrap: anywhere
+    }
+
+    .badges {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 3px
+    }
+
+    .badges span {
+      font-size: .74rem;
+      background: #f4f3fa;
+      border-radius: 999px;
+      padding: 2px 8px;
+      color: #5c5a70
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+      gap: 8px
+    }
+
+    .step {
+      display: flex;
+      gap: 12px;
+      padding: 11px 0;
+      border-bottom: 1px solid #efedf4;
+      line-height: 1.55
+    }
+
+    .step:last-child {
+      border-bottom: 0
+    }
+
+    .stepno {
+      flex: none;
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      background: #f4ede2;
+      color: #a05a13;
+      font-weight: 800;
+      font-size: .82rem;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .ing {
+      display: flex;
+      gap: 8px;
+      padding: 7px 0;
+      border-bottom: 1px dashed #efedf4
+    }
+
+    .ing:last-child {
+      border-bottom: 0
+    }
+
+    .amount {
+      font-variant-numeric: tabular-nums;
+      font-weight: 800;
+      min-width: 84px;
+      color: #8c4c0d
+    }
+
+    .photo {
+      display: block;
+      width: 100%;
+      max-height: 340px;
+      object-fit: cover;
+      border-radius: 14px;
+      margin-bottom: 12px;
+      background: #f4ede2
+    }
+
+    .serv {
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    pre.snippet {
+      margin: 8px 0 0;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #f0eff8;
+      color: #333244;
+      font-size: .8rem;
+      overflow-x: auto
+    }
+
+    .serv button {
+      min-width: 44px
+    }
+
+    .serv input {
+      width: 74px;
+      text-align: center
+    }
+
+    @media(max-width:640px) {
+      body {
+        padding-left: 12px;
+        padding-right: 12px
+      }
+
+      .card {
+        padding: 15px;
+        border-radius: 15px
+      }
+
+      .filters {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .row.mobile-stack {
+        align-items: stretch;
+        flex-direction: column
+      }
+
+      .row.mobile-stack button {
+        width: 100%
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <header class="hero">
+      <h1>Recipe Book</h1>
+      <p>Search, scale, plan and share your recipes — synced peer-to-peer.</p>
+    </header>
+    <section id="browse" hidden>
+      <div class="card stack">
+        <div class="filters">
+          <input id="search" type="search" placeholder="Search title or ingredient…">
+          <select id="filter-category">
+            <option value="">All categories</option>
+          </select>
+          <select id="filter-language">
+            <option value="">All languages</option>
+          </select>
+          <input id="filter-kcal" type="number" min="0" placeholder="max kcal">
+          <input id="filter-protein" type="number" min="0" placeholder="min protein g">
+        </div>
+        <div class="row wrap"><select id="sort" class="grow">
+            <option value="title">Sort: title</option>
+            <option value="rating">Sort: rating</option>
+            <option value="calories">Sort: calories</option>
+            <option value="protein">Sort: protein</option>
+          </select><span class="row" style="gap:6px"><input id="search-ingredients" type="checkbox" style="width:auto;min-height:auto"><label for="search-ingredients" style="font-weight:400;font-size:.82rem">search ingredients</label></span><span id="count" class="muted"></span><button type="button" id="fav-filter" class="ghost" title="Show favorites only">☆ Favorites</button><button type="button" id="new-recipe">New recipe</button></div>
+      </div>
+      <div id="list" class="stack"></div>
+    </section>
+    <section id="detail" hidden></section>
+    <section id="catalog" hidden>
+      <div class="card stack">
+        <div class="filters">
+          <input id="catalog-search" type="search" placeholder="Search catalog: title or ingredient…">
+          <select id="catalog-category">
+            <option value="">All categories</option>
+          </select>
+          <select id="catalog-rating">
+            <option value="0">Any rating</option>
+            <option value="3">★ 3+</option>
+            <option value="4">★ 4+</option>
+            <option value="4.5">★ 4.5+</option>
+          </select>
+          <input id="catalog-kcal" type="number" min="0" step="50" placeholder="max kcal">
+          <select id="catalog-sort">
+            <option value="rating">Sort: rating</option>
+            <option value="title">Sort: title</option>
+            <option value="kcal">Sort: calories</option>
+          </select>
+        </div>
+        <div class="row wrap"><span id="catalog-count" class="muted grow"></span></div>
+      </div>
+      <div id="catalog-status"></div>
+      <div id="catalog-list" class="stack"></div>
+    </section>
+    <section id="catalog-detail" hidden></section>
+    <section id="editor" hidden>
+      <div class="card stack">
+        <div class="row"><h2 id="editor-title" class="grow" style="margin:0">New recipe</h2><button type="button" class="ghost" id="editor-cancel">Cancel</button></div>
+        <label>Title<input id="edit-title" maxlength="200" required></label>
+        <div class="row wrap">
+          <label class="grow">Category<input id="edit-category" maxlength="100"></label>
+          <label style="max-width:120px">Language<input id="edit-language" maxlength="8" placeholder="de / en"></label>
+        </div>
+        <div class="row wrap">
+          <label style="max-width:120px">Servings<input id="edit-servings" type="number" min="1" max="99" value="4"></label>
+          <label class="grow">Serving unit<input id="edit-serving-unit" maxlength="40" placeholder="portions"></label>
+          <label class="grow">Total time<input id="edit-total-time" maxlength="40" placeholder="45 min"></label>
+          <label class="grow">Prep time<input id="edit-prep-time" maxlength="40" placeholder="15 min"></label>
+        </div>
+        <div class="row wrap">
+          <label class="grow">kcal / serving<input id="edit-calories" type="number" min="0" step="any"></label>
+          <label class="grow">Protein g<input id="edit-protein" type="number" min="0" step="any"></label>
+          <label class="grow">Carbs g<input id="edit-carbs" type="number" min="0" step="any"></label>
+          <label class="grow">Fat g<input id="edit-fat" type="number" min="0" step="any"></label>
+        </div>
+        <label>Ingredients — one per line, e.g. <code>250 g flour</code><textarea id="edit-ingredients" rows="10" style="width:100%;border:1px solid #d9d8e2;border-radius:11px;padding:10px 12px;font:inherit"></textarea></label>
+        <label>Preparation steps — one per line<textarea id="edit-steps" rows="10" style="width:100%;border:1px solid #d9d8e2;border-radius:11px;padding:10px 12px;font:inherit"></textarea></label>
+        <div class="row mobile-stack"><button type="button" id="editor-save" class="grow">Save recipe</button></div>
+        <div id="editor-status" class="muted" aria-live="polite"></div>
+      </div>
+    </section>
+    <section id="import" hidden>
+      <div class="card stack">
+        <h2 style="margin:0">Import recipes</h2>
+        <p class="muted">Select a <code>recipes-import.json</code> bundle created by <code>scripts/cookidump-to-recipes.mjs</code> (or exported from another Recipe Book). Recipes already imported (same source id) are skipped. Large archives work best as a searchable catalog: filter below and import only what you cook.</p>
+        <input id="import-input" type="file" accept="application/json,.json">
+        <div class="row wrap"><input id="bundle-filter" class="grow" type="search" placeholder="Filter bundle: title / ingredient / category, e.g. lang:de risotto"><span id="bundle-count" class="muted"></span></div>
+        <div class="row mobile-stack"><button type="button" id="import-matching" class="grow">Import matching</button><button type="button" id="run-import" class="secondary grow">Import entire bundle</button></div>
+        <div id="import-status" class="muted" aria-live="polite"></div>
+      </div>
+      <div class="card stack">
+        <h2 style="margin:0">Match photos</h2>
+        <p class="muted"><b>Optional</b> — recipes now find their photos lazily by file name, so simply uploading images to this dapp's Files is enough for display. Use matching when your images are still on disk (it uploads only images some recipe references) or to hard-link records and optionally embed compact browse previews.</p>
+        <input id="photo-files" type="file" accept="image/*" multiple>
+        <div class="row wrap"><input id="photo-previews" type="checkbox" style="width:auto;min-height:auto"><label for="photo-previews" style="font-weight:400">Also embed a small browse preview per matched recipe. Costs ~10&nbsp;KB per recipe <b>inside the shared document</b> — fine for a few hundred recipes, but thousands make the dapp slow to sync for every member. Without it, Browse shows category icons and full photos still load per recipe.</label></div>
+        <div class="row mobile-stack"><button type="button" id="match-photos" class="grow">Match photos to recipes</button></div>
+        <div id="photo-status" class="muted" aria-live="polite"></div>
+      </div>
+    </section>
+  </main>
+  <script>
+    const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    } [c]));
+    const CATEGORY_EMOJI = [
+      [/brot|bread|back|bak/i, '🥖'],
+      [/kuchen|sweet|dessert|süß|cake/i, '🍰'],
+      [/suppe|soup/i, '🍲'],
+      [/salat|salad|starter|vorspeise/i, '🥗'],
+      [/fleisch|meat|poultry|geflügel/i, '🍖'],
+      [/fisch|fish|meeres|seafood/i, '🐟'],
+      [/vege|vegan/i, '🥦'],
+      [/pasta|nudel|rice|reis/i, '🍝'],
+      [/getränk|drink|cocktail/i, '🥤'],
+      [/frühstück|breakfast/i, '🍳'],
+      [/sauce|dip|spread/i, '🥣'],
+      [/beilage|side/i, '🥔']
+    ];
+    const catEmoji = (c) => {
+      for (const [p, e] of CATEGORY_EMOJI)
+        if (p.test(c || '')) return e;
+      return '🍽️'
+    };
+    const parseJson = (text, fallback) => {
+      try {
+        const v = JSON.parse(text);
+        return Array.isArray(v) ? v : fallback
+      } catch {
+        return fallback
+      }
+    };
+    const safeThumb = (v) => typeof v === 'string' && /^data:image\/(jpeg|webp|png);base64,[A-Za-z0-9+/]+={0,2}$/.test(v) && v.length <= 12000 ? v : '';
+    // One mapping from a recipe-book-import entry (file import, shared recipe,
+    // catalog pick) to a stored record, with the same caps everywhere.
+    function recipeRecordFrom(entry, defaultTitle) {
+      const thumb = safeThumb(entry.thumbDataUrl);
+      return {
+        title: String(entry.title || defaultTitle || '').slice(0, 200),
+        category: String(entry.category || '').slice(0, 100),
+        language: String(entry.language || '').slice(0, 8),
+        servings: Number(entry.servings) || 1,
+        servingUnit: String(entry.servingUnit || 'servings').slice(0, 40),
+        totalTime: String(entry.totalTime || '').slice(0, 40),
+        prepTime: String(entry.prepTime || '').slice(0, 40),
+        calories: Number(entry.calories) || null,
+        protein: Number(entry.protein) || null,
+        carbs: Number(entry.carbs) || null,
+        fat: Number(entry.fat) || null,
+        rating: Number(entry.rating) || null,
+        ingredientsJson: JSON.stringify(Array.isArray(entry.ingredients) ? entry.ingredients.slice(0, 80) : []),
+        instructionsJson: JSON.stringify(Array.isArray(entry.instructions) ? entry.instructions.slice(0, 60).map(String) : []),
+        sourceId: String(entry.sourceId || ''),
+        imageName: String(entry.imageName || '').slice(0, 120),
+        ...(thumb ? { thumbDataUrl: thumb } : {})
+      };
+    }
+    const fmtAmount = (v) => {
+      if (v == null || !isFinite(v)) return '';
+      const r = v >= 100 ? Math.round(v) : v >= 10 ? Math.round(v * 10) / 10 : Math.round(v * 100) / 100;
+      return String(r).replace(/\.0+$/, '')
+    };
+    const SCALE_UNITS = 'g|kg|ml|l|cl|dl|EL|TL|Msp\\.?|Prisen?|Tbsp|tsp|cups?|St(?:ü|ue)ck|Scheiben?|Zehen?|Blatt|Tropfen|oz|lb';
+
+    function scaleText(text, factor) {
+      if (factor === 1) return text;
+      return String(text).replace(new RegExp('(\\d+(?:[.,]\\d+)?(?:\\s+\\d+\\/\\d+)?|\\d+\\/\\d+)\\s*(' + SCALE_UNITS + ')(?![A-Za-zäöüß])', 'g'), (m, num, unit) => {
+        let value = 0;
+        const parts = num.trim().split(/\s+/);
+        for (const part of parts) {
+          value += part.includes('/') ? Number(part.split('/')[0]) / Number(part.split('/')[1]) : Number(part.replace(',', '.'));
+        }
+        if (!isFinite(value)) return m;
+        return fmtAmount(value * factor) + ' ' + unit;
+      });
+    }
+    let route = '/';
+    let currentId = null;
+    let currentRecipeData = null;
+    let servingsOverride = null;
+    let photoUrls = {};
+    let browseRows = [];
+    let browseCursor = null;
+    let browseBusy = false;
+    let browseTotal = null;
+    let facets = { categories: [], languages: [] };
+    const els = (id) => document.getElementById(id);
+
+    let detailLoading = false;
+
+    async function loadCurrentRecipe() {
+      detailLoading = true;
+      try {
+        currentRecipeData = currentId ? await $db.get('recipes', currentId) : null;
+      } finally {
+        detailLoading = false;
+      }
+      if (route === '/recipe') renderDetail();
+    }
+
+    // Lazy photo resolution: a recipe finds its picture by imageFileId or, if
+    // never explicitly linked, by imageName against the dapp's file store —
+    // fetched from peers on demand. No matching step required for display.
+    const nameToFileId = new Map();
+
+    async function resolveImageUrl(recipe) {
+      let fileId = recipe.imageFileId || '';
+      if (!fileId && recipe.imageName) {
+        if (!nameToFileId.has(recipe.imageName)) {
+          const found = await $files.find(recipe.imageName).catch(() => null);
+          nameToFileId.set(recipe.imageName, found ? found.id : null);
+        }
+        fileId = nameToFileId.get(recipe.imageName) || '';
+      }
+      if (!fileId) return null;
+      if (photoUrls[fileId] === undefined) {
+        photoUrls[fileId] = await $files.objectUrl(fileId).catch(() => null);
+      }
+      return photoUrls[fileId] || null;
+    }
+
+    let browsePhotoToken = 0;
+
+    function queueBrowsePhotos() {
+      const token = ++browsePhotoToken;
+      const targets = browseRows.filter((r) => !safeThumb(r.thumbDataUrl) && (r.imageFileId || r.imageName));
+      void (async () => {
+        for (const recipe of targets) {
+          if (token !== browsePhotoToken) return; // a newer render superseded this pass
+          const url = await resolveImageUrl(recipe).catch(() => null);
+          if (token !== browsePhotoToken || !url) continue;
+          const row = els('list').querySelector('[data-open="' + CSS.escape(recipe.id) + '"]');
+          const slot = row && row.querySelector('.thumb');
+          if (slot) {
+            const img = document.createElement('img');
+            img.className = 'thumb';
+            img.alt = '';
+            img.src = url;
+            slot.replaceWith(img);
+          }
+        }
+      })();
+    }
+
+    // Paged scan over the read model for bulk operations (import dedupe,
+    // photo matching) - replaces holding the whole collection in memory.
+    async function collectRecipeFields(fields) {
+      const out = [];
+      let cursor = null;
+      do {
+        const page = await $db.query('recipes', { limit: 200, ...(cursor ? { cursor } : {}) });
+        for (const row of page.rows) {
+          const item = {};
+          for (const field of fields) item[field] = row[field];
+          out.push(item);
+        }
+        cursor = page.cursor;
+      } while (cursor);
+      return out;
+    }
+
+    async function mergeFacets(categories, languages) {
+      const cats = new Set([...facets.categories, ...categories.filter(Boolean)]);
+      const langs = new Set([...facets.languages, ...languages.filter(Boolean)]);
+      if (cats.size === facets.categories.length && langs.size === facets.languages.length) return;
+      facets = { categories: [...cats].sort(), languages: [...langs].sort() };
+      try { await $data.set('facets', facets); } catch { /* viewers cannot persist facets */ }
+    }
+
+    function factorFor(recipe) {
+      const base = Number(recipe.servings) || 1;
+      const chosen = servingsOverride ?? base;
+      return {
+        base,
+        chosen,
+        factor: chosen / base
+      }
+    }
+
+    function browseQueryOptions() {
+      const query = els('search').value.trim().toLowerCase();
+      const sort = els('sort').value;
+      const index = sort === 'rating' ? 'rating' : sort === 'calories' ? 'calories' : sort === 'protein' ? 'protein' : 'title';
+      const direction = (sort === 'rating' || sort === 'protein') ? 'desc' : 'asc';
+      const match = [];
+      const category = els('filter-category').value;
+      const language = els('filter-language').value;
+      const maxKcal = Number(els('filter-kcal').value) || 0;
+      const minProtein = Number(els('filter-protein').value) || 0;
+      if (category) match.push({ field: 'category', op: 'eq', value: category });
+      if (language) match.push({ field: 'language', op: 'eq', value: language });
+      if (maxKcal > 0) match.push({ field: 'calories', op: 'lte', value: maxKcal });
+      if (minProtein > 0) match.push({ field: 'protein', op: 'gte', value: minProtein });
+      if (query) match.push({ field: els('search-ingredients').checked ? 'ingredientsJson' : 'title', op: 'contains', value: query });
+      return { index, direction, limit: 60, ...(match.length ? { match } : {}) };
+    }
+
+    async function runBrowse(reset) {
+      if (browseBusy) return;
+      browseBusy = true;
+      try {
+        if (favoritesOnly) {
+          const rows = [];
+          for (const id of Array.from(favorites).slice(0, 500)) {
+            const row = await $db.get('recipes', id);
+            if (row) rows.push(row);
+          }
+          rows.sort((a, b) => String(a.title).localeCompare(String(b.title)));
+          browseRows = rows;
+          browseCursor = null;
+        } else {
+          const options = browseQueryOptions();
+          if (!reset && browseCursor) options.cursor = browseCursor;
+          const page = await $db.query('recipes', options);
+          browseRows = reset ? page.rows : browseRows.concat(page.rows);
+          browseCursor = page.cursor;
+        }
+        if (reset || browseTotal == null) browseTotal = await $db.count('recipes');
+      } finally {
+        browseBusy = false;
+      }
+      renderBrowse();
+    }
+
+    let browseRefreshTimer = null;
+    function scheduleBrowseRefresh() {
+      if (browseRefreshTimer) clearTimeout(browseRefreshTimer);
+      browseRefreshTimer = setTimeout(() => {
+        browseRefreshTimer = null;
+        void runBrowse(true);
+      }, 250);
+    }
+
+    function renderBrowse() {
+      const rows = browseRows;
+      els('count').textContent = rows.length + ' loaded' + (browseTotal != null ? ' of ' + browseTotal : '');
+      const select = els('filter-category');
+      const previous = select.value;
+      select.innerHTML = '<option value="">All categories</option>' + facets.categories.map((c) => '<option' + (c === previous ? ' selected' : '') + '>' + esc(c) + '</option>').join('');
+      const languageSelect = els('filter-language');
+      const previousLanguage = languageSelect.value;
+      languageSelect.innerHTML = '<option value="">All languages</option>' + facets.languages.map((l) => '<option' + (l === previousLanguage ? ' selected' : '') + '>' + esc(l) + '</option>').join('');
+      els('list').innerHTML = rows.length ? rows.map((r) => {
+        const thumb = safeThumb(r.thumbDataUrl);
+        const isFav = favorites.has(r.id);
+        return '<div class="item" data-open="' + esc(r.id) + '" role="button" tabindex="0">' + (thumb ? '<img class="thumb" alt="" src="' + thumb + '">' : '<span class="thumb">' + catEmoji(r.category) + '</span>') + '<span class="grow"><span class="item-title">' + esc(r.title) + '</span><span class="badges">' + (r.category ? '<span>' + esc(r.category) + '</span>' : '') + (r.calories ? '<span>' + esc(fmtAmount(Number(r.calories))) + ' kcal</span>' : '') + (r.protein ? '<span>' + esc(fmtAmount(Number(r.protein))) + ' g protein</span>' : '') + (r.totalTime ? '<span>' + esc(r.totalTime) + '</span>' : '') + (r.rating ? '<span>★ ' + esc(String(r.rating)) + '</span>' : '') + '</span></span><button type="button" class="fav' + (isFav ? ' on' : '') + '" data-fav="' + esc(r.id) + '" aria-label="' + (isFav ? 'Remove from favorites' : 'Add to favorites') + '">' + (isFav ? '★' : '☆') + '</button></div>';
+      }).join('') + (browseCursor ? '<div class="row" style="justify-content:center;padding:6px 0"><button type="button" class="secondary" data-load-more>Load more</button></div>' : '') : '<div class="card empty">No recipes match. Import some from the Import tab.</div>';
+      queueBrowsePhotos();
+    }
+
+    function renderDetail() {
+      const recipe = currentRecipeData;
+      const box = els('detail');
+      if (!recipe) {
+        box.innerHTML = detailLoading
+          ? '<div class="card empty">Loading recipe…</div>'
+          : '<div class="card empty">Recipe not found.</div>';
+        return;
+      }
+      const {
+        base,
+        chosen,
+        factor
+      } = factorFor(recipe);
+      const ingredients = parseJson(recipe.ingredientsJson, []);
+      const steps = parseJson(recipe.instructionsJson, []);
+      const thumb = safeThumb(recipe.thumbDataUrl);
+      const per = (v) => v ? esc(fmtAmount(Number(v))) + ' ' : '';
+      const canWrite = Dapp.context && Dapp.context.role !== 'viewer';
+      const isFav = favorites.has(recipe.id);
+      box.innerHTML = '<div class="card">' + '<div class="row wrap" style="margin-bottom:10px"><button type="button" class="secondary" data-back>← Back</button><button type="button" class="fav' + (isFav ? ' on' : '') + '" data-fav-detail aria-label="Toggle favorite">' + (isFav ? '★' : '☆') + '</button><span class="grow"></span>' + (canWrite ? '<button type="button" class="' + (armedDeleteId === recipe.id ? 'danger' : 'ghost') + '" data-delete-recipe>' + (armedDeleteId === recipe.id ? 'Really delete?' : 'Delete') + '</button><button type="button" class="ghost" data-edit-recipe>Edit</button><button type="button" class="ghost" data-attach-photo>Add photo</button><button type="button" class="ghost" data-share>Share recipe</button><button type="button" data-plan-open>Plan this meal</button>' : '') + '</div>' + '<div id="photo-slot">' + (thumb ? '<img class="photo" alt="" src="' + thumb + '">' : '') + '</div>' + '<h2 style="margin:4px 0 8px">' + esc(recipe.title) + '</h2>' + '<div class="badges" style="margin-bottom:12px">' + (recipe.category ? '<span>' + esc(recipe.category) + '</span>' : '') + (recipe.totalTime ? '<span>⏱ ' + esc(recipe.totalTime) + '</span>' : '') + (recipe.rating ? '<span>★ ' + esc(String(recipe.rating)) + '</span>' : '') + '</div>' + '<p class="muted">Per serving: ' + per(recipe.calories) + 'kcal · ' + per(recipe.protein) + 'g protein · ' + per(recipe.carbs) + 'g carbs · ' + per(recipe.fat) + 'g fat</p>' + '<div class="serv" style="margin:12px 0"><button type="button" class="secondary" data-serv="-1">−</button><input id="serv-input" type="number" min="1" max="99" value="' + chosen + '"><button type="button" class="secondary" data-serv="1">+</button><span class="muted">' + esc(recipe.servingUnit || 'servings') + (chosen !== base ? ' (scaled from ' + base + ')' : '') + '</span></div>' + '<div id="plan-form" class="stack" hidden style="margin-bottom:12px"><div class="row wrap"><label class="grow">Plan for date<input id="plan-date" type="date"></label></div><div class="row mobile-stack"><button type="button" id="save-plan" class="grow">Send to planner &amp; shopping list</button></div><div class="notice">Delivery uses local Code App bindings — connect <b>Meal planned</b> to your planner and shopping apps once in Settings → Code App Bindings.</div></div>' + '<div class="card" style="box-shadow:none;border-style:dashed"><h3 style="margin:0 0 6px">Ingredients</h3>' + ingredients.map((i) => '<div class="ing"><span class="amount">' + esc(i.amount != null ? fmtAmount(i.amount * factor) + (i.unit ? ' ' + i.unit : '') : '') + '</span><span class="grow">' + esc(i.amount != null ? i.name : (i.raw || i.name)) + '</span></div>').join('') + '</div>' + '<div class="card" style="box-shadow:none;border-style:dashed"><h3 style="margin:0 0 6px">Preparation</h3>' + steps.map((s, index) => '<div class="step"><span class="stepno">' + (index + 1) + '</span><span class="grow">' + esc(scaleText(s, factor)) + '</span></div>').join('') + '</div>' + '<div id="detail-status" class="muted" aria-live="polite"></div><input id="photo-input" type="file" accept="image/*" class="sr-only" style="display:none">';
+      els('plan-date').value = new Date().toISOString().slice(0, 10);
+      loadFullPhoto(recipe);
+    }
+    async function loadFullPhoto(recipe) {
+      if (!recipe.imageFileId && !recipe.imageName) return;
+      const slot = els('photo-slot');
+      try {
+        const url = await resolveImageUrl(recipe);
+        if (url && currentRecipeData === recipe) {
+          slot.innerHTML = '<img class="photo" alt="" src="' + url + '">';
+        }
+      } catch {
+        const status = els('detail-status');
+        if (status) status.textContent = 'Full photo not available right now — it syncs from members who are online.';
+      }
+    }
+    async function compressThumb(file) {
+      const source = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      return compressThumbFromDataUrl(source);
+    }
+
+    async function compressThumbFromDataUrl(source) {
+      const image = new Image();
+      image.src = source;
+      await image.decode();
+      const scale = Math.min(1, 240 / Math.max(image.width, image.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(image.width * scale));
+      canvas.height = Math.max(1, Math.round(image.height * scale));
+      canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+      let quality = .7;
+      let result = canvas.toDataURL('image/jpeg', quality);
+      while (result.length > 11000 && quality > .25) {
+        quality -= .1;
+        result = canvas.toDataURL('image/jpeg', quality);
+      }
+      return result.length <= 11000 ? result : '';
+    }
+
+    // ── Catalog: browse an external recipe catalog and add single recipes ──
+    // The catalog is static JSON (catalog/index.json + catalog/shards/NN.json +
+    // images/, see scripts/cookidump-catalog-site.mjs) on an origin the manifest
+    // grants under permissions.network. That grant is the only configuration:
+    // the sandbox CSP enforces it and Dapp.context.permissions tells us which.
+    const CATALOG_PAGE = 60;
+    const catalog = { origin: '', images: false, rows: [], categories: [], shardOf: new Map(), shards: new Map(), results: [], shown: 0, state: 'idle', error: '' };
+    let catalogCurrentId = null;
+    let catalogCurrent = null;
+    let catalogInBookId = null;
+    let catalogAdding = false;
+
+    function grantedOrigins(kind) {
+      const permissions = Dapp.context && Dapp.context.permissions;
+      const list = permissions && permissions.network && permissions.network[kind];
+      return Array.isArray(list) ? list : [];
+    }
+
+    function catalogUrl(path) {
+      return catalog.origin + '/' + path.split('/').map(encodeURIComponent).join('/');
+    }
+
+    async function ensureCatalog() {
+      if (catalog.state === 'ready' || catalog.state === 'loading') return;
+      const origin = grantedOrigins('connect')[0] || '';
+      if (!origin) {
+        catalog.state = 'unconfigured';
+        renderCatalog();
+        return;
+      }
+      catalog.origin = origin;
+      catalog.images = grantedOrigins('images').includes(origin);
+      catalog.state = 'loading';
+      catalog.error = '';
+      renderCatalog();
+      try {
+        const response = await fetch(catalogUrl('catalog/index.json'));
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const index = await response.json();
+        if (!index || !Array.isArray(index.rows)) throw new Error('not a recipe catalog index');
+        catalog.rows = index.rows;
+        catalog.categories = Array.isArray(index.categories) ? index.categories : [];
+        catalog.shardOf = new Map(index.rows.map((row) => [row[0], row[8]]));
+        const select = els('catalog-category');
+        select.innerHTML = '<option value="">All categories</option>' + catalog.categories.map(([name, count]) => '<option value="' + esc(name) + '">' + esc(name) + ' (' + Number(count) + ')</option>').join('');
+        catalog.state = 'ready';
+        catalogSearch();
+      } catch (error) {
+        catalog.state = 'error';
+        catalog.error = error.message;
+        renderCatalog();
+      }
+    }
+
+    async function loadCatalogEntry(id) {
+      const shard = catalog.shardOf.get(id);
+      if (!shard) return null;
+      if (!catalog.shards.has(shard)) {
+        catalog.shards.set(shard, fetch(catalogUrl('catalog/shards/' + shard + '.json')).then((response) => {
+          if (!response.ok) throw new Error('HTTP ' + response.status);
+          return response.json();
+        }).catch((error) => {
+          catalog.shards.delete(shard);
+          throw error;
+        }));
+      }
+      return (await catalog.shards.get(shard))[id] || null;
+    }
+
+    function catalogSearch() {
+      if (catalog.state !== 'ready') return;
+      const terms = els('catalog-search').value.toLowerCase().split(/\s+/).filter(Boolean);
+      const category = els('catalog-category').value;
+      const minRating = Number(els('catalog-rating').value) || 0;
+      const maxKcal = Number(els('catalog-kcal').value) || 0;
+      const sort = els('catalog-sort').value;
+      const results = [];
+      for (const row of catalog.rows) {
+        const [, title, cat, rating, kcal, , , ingredients] = row;
+        if (category && cat !== category) continue;
+        if (minRating && !(rating >= minRating)) continue;
+        if (maxKcal && !(kcal != null && kcal <= maxKcal)) continue;
+        if (terms.length) {
+          const haystack = String(title).toLowerCase() + ' ' + String(ingredients || '');
+          if (!terms.every((term) => haystack.includes(term))) continue;
+        }
+        results.push(row);
+      }
+      if (sort === 'rating') results.sort((a, b) => (b[3] ?? -1) - (a[3] ?? -1) || String(a[1]).localeCompare(String(b[1])));
+      else if (sort === 'kcal') results.sort((a, b) => (a[4] ?? 1e9) - (b[4] ?? 1e9));
+      else results.sort((a, b) => String(a[1]).localeCompare(String(b[1])));
+      catalog.results = results;
+      catalog.shown = Math.min(CATALOG_PAGE, results.length);
+      renderCatalog();
+    }
+
+    function renderCatalog() {
+      const status = els('catalog-status');
+      const list = els('catalog-list');
+      const count = els('catalog-count');
+      if (catalog.state === 'unconfigured') {
+        status.innerHTML = '<div class="card"><div class="notice">No catalog configured. Grant the catalog\'s HTTPS origin in <code>manifest.yaml</code> — that is the whole setup:</div><pre class="snippet">permissions:\n  network:\n    connect: [https://recipes.example]\n    images:  [https://recipes.example]</pre><p class="muted">The catalog is the static site built by <code>scripts/cookidump-catalog-site.mjs</code>; <code>connect</code> lets this app read it, <code>images</code> shows its photos.</p></div>';
+        list.innerHTML = '';
+        count.textContent = '';
+        return;
+      }
+      if (catalog.state === 'loading' || catalog.state === 'idle') {
+        status.innerHTML = '<div class="card empty">Loading catalog from ' + esc(catalog.origin.replace(/^https?:\/\//, '')) + '… the index is a few MB and is cached by your browser.</div>';
+        list.innerHTML = '';
+        count.textContent = '';
+        return;
+      }
+      if (catalog.state === 'error') {
+        status.innerHTML = '<div class="card stack"><div class="notice">Could not load the catalog from <code>' + esc(catalog.origin) + '</code>: ' + esc(catalog.error) + '</div><div class="row"><button type="button" class="secondary" data-catalog-retry>Try again</button></div></div>';
+        list.innerHTML = '';
+        count.textContent = '';
+        return;
+      }
+      status.innerHTML = catalog.images ? '' : '<div class="notice">Photos are hidden: add this origin under <code>permissions.network.images</code> in <code>manifest.yaml</code> to show them.</div>';
+      count.textContent = catalog.results.length.toLocaleString() + ' of ' + catalog.rows.length.toLocaleString() + ' catalog recipes';
+      const rows = catalog.results.slice(0, catalog.shown);
+      list.innerHTML = rows.length ? rows.map(([id, title, cat, rating, kcal, time, image]) => {
+        const thumb = catalog.images && image ? '<img class="thumb" alt="" loading="lazy" src="' + esc(catalogUrl('images/' + image)) + '">' : '<span class="thumb">' + catEmoji(cat) + '</span>';
+        return '<div class="item" data-catalog-open="' + esc(id) + '" role="button" tabindex="0">' + thumb + '<span class="grow"><span class="item-title">' + esc(title) + '</span><span class="badges">' + (cat ? '<span>' + esc(cat) + '</span>' : '') + (kcal != null ? '<span>' + Number(kcal) + ' kcal</span>' : '') + (time ? '<span>' + esc(time) + '</span>' : '') + (rating != null ? '<span>★ ' + esc(Number(rating).toFixed(1)) + '</span>' : '') + '</span></span></div>';
+      }).join('') + (catalog.shown < catalog.results.length ? '<div class="row" style="justify-content:center;padding:6px 0"><button type="button" class="secondary" data-catalog-more>Load more</button></div>' : '') : '<div class="card empty">No catalog recipes match.</div>';
+    }
+
+    async function loadCatalogDetail() {
+      const id = catalogCurrentId;
+      catalogCurrent = null;
+      catalogInBookId = null;
+      renderCatalogDetail();
+      await ensureCatalog();
+      if (catalog.state !== 'ready' || id !== catalogCurrentId) return;
+      try {
+        const entry = await loadCatalogEntry(id);
+        if (id !== catalogCurrentId) return;
+        catalogCurrent = entry ? { ...entry, sourceId: String(entry.sourceId || id) } : null;
+        const existing = await $db.query('recipes', { limit: 1, match: [{ field: 'sourceId', op: 'eq', value: id }] });
+        if (id !== catalogCurrentId) return;
+        catalogInBookId = existing.rows.length ? existing.rows[0].id : null;
+      } catch (error) {
+        catalog.error = error.message;
+      }
+      renderCatalogDetail();
+    }
+
+    function renderCatalogDetail() {
+      const box = els('catalog-detail');
+      const entry = catalogCurrent;
+      if (!entry) {
+        const missing = catalog.state === 'ready' && catalogCurrentId && !catalog.shardOf.has(catalogCurrentId);
+        box.innerHTML = '<div class="card stack"><div class="row"><button type="button" class="secondary" data-back>← Back to catalog</button></div><div class="empty">' + (missing ? 'This recipe is not in the catalog.' : catalog.state === 'error' || catalog.state === 'unconfigured' ? 'The catalog is not available.' : 'Loading recipe…') + '</div></div>';
+        return;
+      }
+      const canWrite = Dapp.context && Dapp.context.role !== 'viewer';
+      const ingredients = Array.isArray(entry.ingredients) ? entry.ingredients : [];
+      const steps = Array.isArray(entry.instructions) ? entry.instructions : [];
+      const per = (v) => v != null && v !== '' ? esc(fmtAmount(Number(v))) + ' ' : '';
+      const photo = catalog.images && entry.imageName ? '<img class="photo" alt="" src="' + esc(catalogUrl('images/' + entry.imageName)) + '">' : '';
+      const action = catalogInBookId
+        ? '<button type="button" data-open-book="' + esc(catalogInBookId) + '">In your book — open</button>'
+        : canWrite
+          ? '<button type="button" data-catalog-add' + (catalogAdding ? ' disabled' : '') + '>' + (catalogAdding ? 'Adding…' : 'Add to my Recipe Book') + '</button>'
+          : '<span class="muted">Viewers can browse the catalog; editors can add recipes.</span>';
+      box.innerHTML = '<div class="card">' + '<div class="row wrap" style="margin-bottom:10px"><button type="button" class="secondary" data-back>← Back to catalog</button><span class="grow"></span>' + action + '</div>' + photo + '<h2 style="margin:4px 0 8px">' + esc(entry.title) + '</h2>' + '<div class="badges" style="margin-bottom:12px">' + (entry.category ? '<span>' + esc(entry.category) + '</span>' : '') + (entry.totalTime ? '<span>⏱ ' + esc(entry.totalTime) + '</span>' : '') + (entry.prepTime ? '<span>prep ' + esc(entry.prepTime) + '</span>' : '') + (entry.rating != null ? '<span>★ ' + esc(Number(entry.rating).toFixed(1)) + '</span>' : '') + '<span>' + esc(String(entry.servings || 1)) + ' ' + esc(entry.servingUnit || 'servings') + '</span></div>' + (entry.calories != null ? '<p class="muted">Per serving: ' + per(entry.calories) + 'kcal · ' + per(entry.protein) + 'g protein · ' + per(entry.carbs) + 'g carbs · ' + per(entry.fat) + 'g fat</p>' : '') + '<div class="card" style="box-shadow:none;border-style:dashed"><h3 style="margin:0 0 6px">Ingredients</h3>' + ingredients.map((i) => '<div class="ing"><span class="amount">' + esc(i.amount != null ? fmtAmount(Number(i.amount)) + (i.unit ? ' ' + i.unit : '') : '') + '</span><span class="grow">' + esc(i.amount != null ? i.name : (i.raw || i.name)) + '</span></div>').join('') + '</div>' + '<div class="card" style="box-shadow:none;border-style:dashed"><h3 style="margin:0 0 6px">Preparation</h3>' + steps.map((step, index) => '<div class="step"><span class="stepno">' + (index + 1) + '</span><span class="grow">' + esc(step) + '</span></div>').join('') + '</div>' + '<div id="catalog-detail-status" class="muted" aria-live="polite"></div></div>';
+    }
+
+    // Photo bytes come from the catalog origin (connect permission) and are
+    // stored through $files so the picture syncs to members like an upload.
+    async function attachCatalogPhoto(recordId, entry) {
+      if (!entry.imageName) return;
+      let fileRecord = await $files.find(entry.imageName).catch(() => null);
+      let blob = null;
+      if (!fileRecord) {
+        const response = await fetch(catalogUrl('images/' + entry.imageName));
+        if (!response.ok) throw new Error('photo HTTP ' + response.status);
+        blob = await response.blob();
+        fileRecord = await $files.add({ name: entry.imageName, mime: blob.type || 'image/jpeg', data: blob });
+      }
+      const thumb = blob ? await compressThumb(blob).catch(() => '') : '';
+      await $store.update('recipes', recordId, { imageFileId: fileRecord.id, ...(thumb ? { thumbDataUrl: thumb } : {}) });
+    }
+
+    async function addCatalogRecipe() {
+      const entry = catalogCurrent;
+      if (!entry || catalogAdding) return;
+      catalogAdding = true;
+      renderCatalogDetail();
+      const status = els('catalog-detail-status');
+      try {
+        const existing = await $db.query('recipes', { limit: 1, match: [{ field: 'sourceId', op: 'eq', value: entry.sourceId }] });
+        let recordId = existing.rows.length ? existing.rows[0].id : null;
+        if (!recordId) {
+          const created = await $store.create('recipes', recipeRecordFrom(entry, 'Untitled'));
+          recordId = created.id;
+          await mergeFacets([String(entry.category || '')], [String(entry.language || '')]);
+        }
+        catalogInBookId = recordId;
+        if (status) status.textContent = 'Added. Fetching the photo…';
+        try {
+          await attachCatalogPhoto(recordId, entry);
+        } catch (error) {
+          if (status) status.textContent = 'Added without photo: ' + error.message;
+        }
+        currentId = recordId;
+        currentRecipeData = null;
+        servingsOverride = null;
+        await $router.navigate('/recipe?id=' + encodeURIComponent(recordId));
+      } catch (error) {
+        if (status) status.textContent = 'Could not add: ' + error.message;
+      } finally {
+        catalogAdding = false;
+        if (route === '/catalog') renderCatalogDetail();
+      }
+    }
+
+    function render() {
+      els('browse').hidden = editorOpen || route !== '/';
+      els('detail').hidden = editorOpen || route !== '/recipe';
+      els('catalog').hidden = editorOpen || route !== '/catalog' || !!catalogCurrentId;
+      els('catalog-detail').hidden = editorOpen || route !== '/catalog' || !catalogCurrentId;
+      els('import').hidden = editorOpen || route !== '/import';
+      els('editor').hidden = !editorOpen;
+      if (editorOpen) return;
+      if (route === '/') renderBrowse();
+      if (route === '/recipe') renderDetail();
+      if (route === '/catalog') {
+        if (catalogCurrentId) renderCatalogDetail();
+        else if (catalog.state === 'ready') renderCatalog();
+        else void ensureCatalog();
+      }
+    }
+    Dapp.onReady(async () => {
+      await $actions.handle('recipe.receive', async (payload) => {
+        const incoming = payload && payload.recipe;
+        if (!incoming || typeof incoming !== 'object') throw new Error('Malformed recipe payload');
+        const title = String(incoming.title || '').slice(0, 200);
+        if (!title) throw new Error('Shared recipe has no title');
+        const sourceId = String(incoming.sourceId || '');
+        const dupes = await $db.query('recipes', {
+          limit: 1,
+          match: sourceId
+            ? [{ field: 'sourceId', op: 'eq', value: sourceId }, { field: 'title', op: 'eq', value: title }]
+            : [{ field: 'title', op: 'eq', value: title }],
+        });
+        if (dupes.rows.length > 0) return;
+        await $store.create('recipes', { ...recipeRecordFrom(incoming), title, received: true });
+        await mergeFacets([String(incoming.category || '')], [String(incoming.language || '')]);
+      });
+      route = $router.current();
+      $router.subscribe((next) => {
+        route = next;
+        armedDeleteId = null;
+        const id = $router.query('id');
+        if (next === '/catalog') {
+          const nextCatalogId = id || null;
+          if (nextCatalogId !== catalogCurrentId) {
+            catalogCurrentId = nextCatalogId;
+            if (catalogCurrentId) void loadCatalogDetail();
+          }
+          render();
+          return;
+        }
+        if (id && id !== currentId) {
+          currentId = id;
+          currentRecipeData = null;
+          servingsOverride = null;
+          void loadCurrentRecipe();
+        } else if (id && next === '/recipe' && (!currentRecipeData || currentRecipeData.id !== id)) {
+          // A handler set currentId before navigating — the data still has to load.
+          void loadCurrentRecipe();
+        }
+        render();
+      });
+      const id = $router.query('id');
+      if (id && route === '/catalog') {
+        catalogCurrentId = id;
+        void loadCatalogDetail();
+      } else if (id) {
+        currentId = id;
+      }
+      await $db.subscribe('recipes', () => {
+        void runBrowse(true);
+        if (route === '/recipe') void loadCurrentRecipe();
+      });
+      void runBrowse(true);
+      if (currentId) void loadCurrentRecipe();
+      if (Dapp.context && Dapp.context.identity && Dapp.context.identity.publicKey) {
+        favoritesKey = 'favorites:' + Dapp.context.identity.publicKey;
+      }
+      await $data.subscribe((snapshot) => {
+        const stored = snapshot ? snapshot[favoritesKey] : null;
+        favorites = new Set(Array.isArray(stored) ? stored : []);
+        const storedFacets = snapshot ? snapshot['facets'] : null;
+        if (storedFacets && typeof storedFacets === 'object') {
+          facets = {
+            categories: Array.isArray(storedFacets.categories) ? storedFacets.categories : [],
+            languages: Array.isArray(storedFacets.languages) ? storedFacets.languages : [],
+          };
+        }
+        render();
+      });
+    });
+    ['search', 'search-ingredients', 'filter-category', 'filter-language', 'filter-kcal', 'filter-protein', 'sort'].forEach((id) => els(id).addEventListener('input', scheduleBrowseRefresh));
+    els('list').addEventListener('click', async (event) => {
+      if (event.target.closest('[data-load-more]')) {
+        await runBrowse(false);
+        return;
+      }
+      const star = event.target.closest('[data-fav]');
+      if (star) {
+        await toggleFavorite(star.dataset.fav);
+        return;
+      }
+      const button = event.target.closest('[data-open]');
+      if (!button) return;
+      currentId = button.dataset.open;
+      servingsOverride = null;
+      await $router.navigate('/recipe?id=' + encodeURIComponent(currentId));
+    });
+    els('detail').addEventListener('click', async (event) => {
+      const target = event.target;
+      const recipe = currentRecipeData;
+      if (target.closest('[data-back]')) {
+        await $router.navigate('/');
+        return;
+      }
+      if (target.closest('[data-fav-detail]')) {
+        if (recipe) await toggleFavorite(recipe.id);
+        return;
+      }
+      if (target.closest('[data-edit-recipe]')) {
+        if (recipe) openEditor(recipe);
+        return;
+      }
+      if (target.closest('[data-delete-recipe]')) {
+        if (!recipe) return;
+        if (armedDeleteId !== recipe.id) {
+          armedDeleteId = recipe.id;
+          renderDetail();
+          return;
+        }
+        armedDeleteId = null;
+        try {
+          const fileId = recipe.imageFileId;
+          await $store.delete('recipes', recipe.id);
+          if (fileId) await $files.delete(fileId).catch(() => {});
+          currentId = null;
+          currentRecipeData = null;
+          await $router.navigate('/');
+        } catch (error) {
+          els('detail-status').textContent = 'Delete failed: ' + error.message;
+        }
+        return;
+      }
+      if (!recipe) return;
+      if (target.closest('[data-serv]')) {
+        const delta = Number(target.closest('[data-serv]').dataset.serv);
+        const {
+          chosen
+        } = factorFor(recipe);
+        servingsOverride = Math.min(99, Math.max(1, chosen + delta));
+        renderDetail();
+        return;
+      }
+      if (target.closest('[data-plan-open]')) {
+        els('plan-form').hidden = !els('plan-form').hidden;
+        return;
+      }
+      if (target.id === 'save-plan') {
+        const {
+          chosen,
+          factor
+        } = factorFor(recipe);
+        const ingredients = parseJson(recipe.ingredientsJson, []).map((i) => ({
+          name: i.amount != null ? i.name : (i.raw || i.name),
+          amount: i.amount != null ? Math.round(i.amount * factor * 100) / 100 : null,
+          unit: i.unit || ''
+        }));
+        try {
+          const outcome = await $events.publish('meal.plan', {
+            title: recipe.title,
+            date: els('plan-date').value,
+            servings: chosen,
+            recipeId: recipe.id,
+            sourceDappId: Dapp.context.dappId,
+            thumb: safeThumb(recipe.thumbDataUrl),
+            ingredients
+          });
+          const delivered = (outcome.direct && outcome.direct.deliveryIds ? outcome.direct.deliveryIds.length : 0);
+          els('detail-status').textContent = delivered > 0 ? 'Sent to ' + delivered + ' connected app' + (delivered === 1 ? '' : 's') + '.' : 'No apps connected yet — approve bindings in Settings → Code App Bindings, then try again.';
+        } catch (error) {
+          els('detail-status').textContent = error.message;
+        }
+        return;
+      }
+      if (target.closest('[data-share]')) {
+        try {
+          await shareCurrentRecipe(recipe);
+        } catch (error) {
+          els('detail-status').textContent = 'Could not share: ' + error.message;
+        }
+        return;
+      }
+      if (target.closest('[data-attach-photo]')) {
+        els('photo-input').click();
+        return;
+      }
+    });
+
+    // Sharing is fire-and-forget: $share.open returns as soon as the signed invite
+    // is queued, and the recipe event waits durably in the isolated channel until
+    // the contact accepts. Re-sharing to the same contact reuses their channel.
+    async function shareCurrentRecipe(recipe) {
+      const contacts = await $contacts.pick({
+        label: 'Share this recipe',
+        min: 1,
+        max: 8
+      });
+      if (!contacts.length) return;
+      const opened = await $share.open({
+        shareId: 'recipe-share',
+        contacts
+      });
+      if (!opened.instanceId) return;
+      await $events.publish('recipe.shared', {
+        recipe: {
+          title: recipe.title,
+          category: recipe.category,
+          language: recipe.language,
+          imageName: recipe.imageName,
+          servings: recipe.servings,
+          servingUnit: recipe.servingUnit,
+          totalTime: recipe.totalTime,
+          prepTime: recipe.prepTime,
+          calories: recipe.calories,
+          protein: recipe.protein,
+          carbs: recipe.carbs,
+          fat: recipe.fat,
+          rating: recipe.rating,
+          sourceId: recipe.sourceId,
+          thumbDataUrl: safeThumb(recipe.thumbDataUrl),
+          ingredients: parseJson(recipe.ingredientsJson, []),
+          instructions: parseJson(recipe.instructionsJson, [])
+        }
+      }, {
+        instanceId: opened.instanceId
+      });
+      const waiting = (opened.participants || []).filter((entry) => entry.status === 'pending').length;
+      els('detail-status').textContent = waiting > 0
+        ? 'Recipe queued — it is delivered as soon as your invite is accepted. Only this recipe travels, never your whole book.'
+        : 'Recipe shared — only this recipe travels, never your whole book.';
+    }
+    els('detail').addEventListener('change', async (event) => {
+      if (event.target.id !== 'photo-input') return;
+      const file = event.target.files[0];
+      const recipe = currentRecipeData;
+      if (!file || !recipe) return;
+      els('detail-status').textContent = 'Attaching photo…';
+      try {
+        const thumb = await compressThumb(file);
+        const added = await $files.add({
+          name: (recipe.title || 'recipe').slice(0, 60) + '.jpg',
+          mime: file.type || 'image/jpeg',
+          data: file
+        });
+        await $store.update('recipes', recipe.id, {
+          imageFileId: added.id,
+          ...(thumb ? {
+            thumbDataUrl: thumb
+          } : {})
+        });
+        currentRecipeData = { ...recipe, imageFileId: added.id, ...(thumb ? { thumbDataUrl: thumb } : {}) };
+        renderDetail();
+        els('detail-status').textContent = 'Photo attached — it syncs to members through the P2P file store.';
+      } catch (error) {
+        els('detail-status').textContent = 'Photo attach failed: ' + error.message;
+      }
+    });
+    els('detail').addEventListener('input', (event) => {
+      if (event.target.id !== 'serv-input') return;
+      const value = Number(event.target.value);
+      if (value >= 1 && value <= 99) {
+        servingsOverride = value;
+        renderDetail();
+      }
+    });
+    let bundleCache = null;
+    async function loadBundle() {
+      const input = els('import-input');
+      const file = input.files && input.files[0];
+      if (!file) {
+        els('import-status').textContent = 'Choose a bundle file first.';
+        return null;
+      }
+      if (bundleCache && bundleCache.name === file.name && bundleCache.size === file.size) return bundleCache.bundle;
+      els('import-status').textContent = 'Reading bundle…';
+      let bundle;
+      try {
+        bundle = JSON.parse(await file.text());
+      } catch {
+        els('import-status').textContent = 'That file is not valid JSON.';
+        return null;
+      }
+      if (!bundle || bundle.format !== 'recipe-book-import' || !Array.isArray(bundle.recipes)) {
+        els('import-status').textContent = 'Not a recipe import bundle (expected format "recipe-book-import").';
+        return null;
+      }
+      bundleCache = {
+        name: file.name,
+        size: file.size,
+        bundle
+      };
+      els('import-status').textContent = 'Bundle loaded: ' + bundle.recipes.length + ' recipes.';
+      updateBundleCount();
+      return bundle;
+    }
+
+    function bundleMatches(bundle) {
+      let query = els('bundle-filter').value.trim().toLowerCase();
+      if (!query) return bundle.recipes;
+      let language = null;
+      query = query.replace(/lang:(\w+)/, (m, code) => {
+        language = code;
+        return '';
+      }).trim();
+      return bundle.recipes.filter((entry) => {
+        if (language && String(entry.language || '') !== language) return false;
+        if (!query) return true;
+        return String(entry.title || '').toLowerCase().includes(query) || String(entry.category || '').toLowerCase().includes(query) || (Array.isArray(entry.ingredients) && entry.ingredients.some((i) => String((i && (i.name || i.raw)) || '').toLowerCase().includes(query)));
+      });
+    }
+
+    function updateBundleCount() {
+      if (!bundleCache) {
+        els('bundle-count').textContent = '';
+        return;
+      }
+      els('bundle-count').textContent = bundleMatches(bundleCache.bundle).length + ' match';
+    }
+    let armedImportSize = 0;
+    let armedDeleteId = null;
+    let favorites = new Set();
+    let favoritesOnly = false;
+    let favoritesKey = 'favorites:anon';
+
+    async function toggleFavorite(recipeId) {
+      if (favorites.has(recipeId)) favorites.delete(recipeId);
+      else favorites.add(recipeId);
+      render();
+      try {
+        await $data.set(favoritesKey, Array.from(favorites));
+      } catch (error) {
+        els(route === '/recipe' ? 'detail-status' : 'count').textContent = 'Favorites need editor access: ' + error.message;
+      }
+    }
+    async function importRecipes(list) {
+      const status = els('import-status');
+      if (list.length === 0) {
+        status.textContent = 'Nothing matches that filter.';
+        return;
+      }
+      if (list.length > 3000 && armedImportSize !== list.length) {
+        armedImportSize = list.length;
+        status.textContent = 'Heads up: ' + list.length + ' recipes make this shared dapp heavy for every member. Press the same button again to import anyway, or narrow the filter.';
+        return;
+      }
+      armedImportSize = 0;
+      status.textContent = 'Checking existing recipes…';
+      const existing = await collectRecipeFields(['id', 'sourceId', 'imageName']);
+      const known = new Set(existing.map((r) => String(r.sourceId || '')).filter(Boolean));
+      const missingImageName = new Map();
+      for (const row of existing) {
+        if (row.sourceId && !row.imageName) missingImageName.set(String(row.sourceId), row.id);
+      }
+      let backfilled = 0;
+      const importedCategories = [];
+      const importedLanguages = [];
+      let created = 0,
+        skipped = 0,
+        failed = 0;
+      try {
+        for (const entry of list) {
+          const sourceId = String(entry.sourceId || '');
+          if (sourceId && known.has(sourceId)) {
+            // Already imported — but backfill the image name if this record
+            // predates lazy photo loading.
+            const backfillId = entry.imageName ? missingImageName.get(sourceId) : undefined;
+            if (backfillId) {
+              try {
+                await $store.update('recipes', backfillId, { imageName: String(entry.imageName).slice(0, 120) });
+                missingImageName.delete(sourceId);
+                backfilled++;
+              } catch { /* keep importing */ }
+            }
+            skipped++;
+            continue;
+          }
+          try {
+            await $store.create('recipes', recipeRecordFrom({ ...entry, thumbDataUrl: '' }, 'Untitled'));
+            if (sourceId) known.add(sourceId);
+            if (entry.category) importedCategories.push(String(entry.category));
+            if (entry.language) importedLanguages.push(String(entry.language));
+            created++;
+          } catch {
+            failed++;
+          }
+          if ((created + skipped + failed) % 20 === 0) status.textContent = 'Importing… ' + (created + skipped + failed) + ' / ' + list.length;
+        }
+        status.textContent = 'Import done: ' + created + ' added, ' + skipped + ' already present' + (backfilled ? ', ' + backfilled + ' photo names backfilled' : '') + (failed ? ', ' + failed + ' failed' : '') + '.';
+      } finally {
+        await mergeFacets(importedCategories, importedLanguages);
+        void runBrowse(true);
+      }
+    }
+    document.getElementById('run-import').addEventListener('click', async () => {
+      const bundle = await loadBundle();
+      if (bundle) await importRecipes(bundle.recipes);
+    });
+    els('import-matching').addEventListener('click', async () => {
+      const bundle = await loadBundle();
+      if (bundle) await importRecipes(bundleMatches(bundle));
+    });
+    els('import-input').addEventListener('change', () => {
+      bundleCache = null;
+      void loadBundle();
+    });
+    async function matchPhotos() {
+      const status = els('photo-status');
+      const bundle = await loadBundle();
+      if (!bundle) {
+        status.textContent = 'Load a bundle first — it carries the recipe → image mapping.';
+        return;
+      }
+      const imageBySource = new Map();
+      for (const entry of bundle.recipes) {
+        if (entry.sourceId && entry.imageName) imageBySource.set(String(entry.sourceId), String(entry.imageName));
+      }
+      if (imageBySource.size === 0) {
+        status.textContent = 'This bundle has no image names — regenerate it with the current converter.';
+        return;
+      }
+      const selected = new Map();
+      for (const file of els('photo-files').files) selected.set(file.name, file);
+      const uploadedFiles = new Map();
+      for (const fileRecord of await $files.list()) {
+        if (!uploadedFiles.has(fileRecord.name)) uploadedFiles.set(fileRecord.name, fileRecord);
+      }
+      const makePreviews = els('photo-previews').checked;
+      status.textContent = 'Scanning recipes…';
+      const allRecipes = await collectRecipeFields(['id', 'sourceId', 'imageFileId']);
+      const targets = allRecipes.filter((r) => r.sourceId && !r.imageFileId && imageBySource.has(String(r.sourceId)));
+      if (targets.length === 0) {
+        status.textContent = 'Nothing to match — every recipe with a known image already has one.';
+        return;
+      }
+      let linked = 0, uploaded = 0, missing = 0, failed = 0, done = 0;
+      try {
+        for (const recipe of targets) {
+          const name = imageBySource.get(String(recipe.sourceId));
+          done++;
+          try {
+            let fileRecord = uploadedFiles.get(name) || null;
+            if (!fileRecord) {
+              const file = selected.get(name);
+              if (!file) { missing++; continue; }
+              fileRecord = await $files.add({ name, mime: file.type || 'image/jpeg', data: file, thumbnail: false });
+              uploadedFiles.set(name, fileRecord);
+              uploaded++;
+            }
+            let thumb = '';
+            if (makePreviews) {
+              const file = selected.get(name);
+              if (file) thumb = await compressThumb(file);
+              else if (fileRecord.thumbnail) thumb = await compressThumbFromDataUrl(fileRecord.thumbnail).catch(() => '');
+            }
+            await $store.update('recipes', recipe.id, { imageFileId: fileRecord.id, ...(thumb ? { thumbDataUrl: thumb } : {}) });
+            linked++;
+          } catch { failed++; }
+          if (done % 10 === 0) status.textContent = 'Matching… ' + done + ' / ' + targets.length;
+        }
+        status.textContent = 'Photos: ' + linked + ' linked (' + uploaded + ' newly uploaded), ' + missing + ' had no matching file' + (failed ? ', ' + failed + ' failed' : '') + '.';
+      } finally {
+        void runBrowse(true);
+      }
+    }
+    let editorOpen = false;
+    let editingId = null;
+    const EDIT_UNITS = new Set(['g', 'kg', 'mg', 'ml', 'l', 'cl', 'dl', 'tl', 'el', 'tsp', 'tbsp', 'msp', 'msp.', 'prise', 'prisen', 'cup', 'cups', 'oz', 'lb', 'stück', 'scheibe', 'scheiben', 'zehe', 'zehen', 'bund', 'pck', 'pck.', 'päckchen', 'dose', 'dosen', 'blatt', 'tropfen', 'handvoll', 'portion', 'portionen', 'piece', 'pieces', 'pinch', 'slice', 'slices', 'clove', 'cloves']);
+
+    function parseIngredientLine(line) {
+      const text = line.trim();
+      if (!text) return null;
+      const fraction = text.match(/^(\d+)\/(\d+)(?!\d)/);
+      const decimal = text.match(/^(\d+(?:[.,]\d+)?)(?:\s+(\d+)\/(\d+))?/);
+      let amount = null;
+      let consumed = 0;
+      if (fraction) {
+        amount = Number(fraction[1]) / Number(fraction[2]);
+        consumed = fraction[0].length;
+      } else if (decimal) {
+        amount = Number(decimal[1].replace(',', '.'));
+        if (decimal[2] && decimal[3]) amount += Number(decimal[2]) / Number(decimal[3]);
+        consumed = decimal[0].length;
+      }
+      if (amount == null || !isFinite(amount)) return { amount: null, unit: '', name: text, raw: text };
+      let rest = text.slice(consumed).trim();
+      const firstWord = rest.split(/\s+/)[0] || '';
+      let unit = '';
+      if (EDIT_UNITS.has(firstWord.toLowerCase())) {
+        unit = firstWord;
+        rest = rest.slice(firstWord.length).trim();
+      }
+      return { amount, unit, name: rest || text, raw: text };
+    }
+
+    function ingredientToLine(entry) {
+      if (entry.amount == null) return entry.raw || entry.name || '';
+      return (fmtAmount(entry.amount) + ' ' + (entry.unit ? entry.unit + ' ' : '') + entry.name).trim();
+    }
+
+    function openEditor(recipe) {
+      editingId = recipe ? recipe.id : null;
+      els('editor-title').textContent = recipe ? 'Edit recipe' : 'New recipe';
+      els('edit-title').value = recipe ? recipe.title || '' : '';
+      els('edit-category').value = recipe ? recipe.category || '' : '';
+      els('edit-language').value = recipe ? recipe.language || '' : '';
+      els('edit-servings').value = recipe ? String(Number(recipe.servings) || 1) : '4';
+      els('edit-serving-unit').value = recipe ? recipe.servingUnit || '' : '';
+      els('edit-total-time').value = recipe ? recipe.totalTime || '' : '';
+      els('edit-prep-time').value = recipe ? recipe.prepTime || '' : '';
+      els('edit-calories').value = recipe && recipe.calories != null ? String(recipe.calories) : '';
+      els('edit-protein').value = recipe && recipe.protein != null ? String(recipe.protein) : '';
+      els('edit-carbs').value = recipe && recipe.carbs != null ? String(recipe.carbs) : '';
+      els('edit-fat').value = recipe && recipe.fat != null ? String(recipe.fat) : '';
+      els('edit-ingredients').value = recipe ? parseJson(recipe.ingredientsJson, []).map(ingredientToLine).join('\n') : '';
+      els('edit-steps').value = recipe ? parseJson(recipe.instructionsJson, []).join('\n') : '';
+      els('editor-status').textContent = '';
+      editorOpen = true;
+      render();
+      els('edit-title').focus();
+    }
+
+    async function saveEditor() {
+      const status = els('editor-status');
+      const title = els('edit-title').value.trim();
+      if (!title) {
+        status.textContent = 'The recipe needs a title.';
+        return;
+      }
+      const numberOrNull = (id) => {
+        const value = els(id).value.trim();
+        return value === '' ? null : Number(value.replace(',', '.'));
+      };
+      const ingredients = els('edit-ingredients').value.split('\n').map(parseIngredientLine).filter(Boolean);
+      const steps = els('edit-steps').value.split('\n').map((line) => line.trim()).filter(Boolean);
+      const value = {
+        title: title.slice(0, 200),
+        category: els('edit-category').value.trim().slice(0, 100),
+        language: els('edit-language').value.trim().toLowerCase().slice(0, 8),
+        servings: Math.min(99, Math.max(1, Number(els('edit-servings').value) || 1)),
+        servingUnit: els('edit-serving-unit').value.trim().slice(0, 40) || 'portions',
+        totalTime: els('edit-total-time').value.trim().slice(0, 40),
+        prepTime: els('edit-prep-time').value.trim().slice(0, 40),
+        calories: numberOrNull('edit-calories'),
+        protein: numberOrNull('edit-protein'),
+        carbs: numberOrNull('edit-carbs'),
+        fat: numberOrNull('edit-fat'),
+        ingredientsJson: JSON.stringify(ingredients.slice(0, 80)),
+        instructionsJson: JSON.stringify(steps.slice(0, 60)),
+      };
+      try {
+        if (editingId) {
+          await $store.update('recipes', editingId, value);
+          currentId = editingId;
+          currentRecipeData = { ...(currentRecipeData || {}), ...value, id: editingId };
+        } else {
+          const created = await $store.create('recipes', value);
+          currentId = created.id;
+          currentRecipeData = created;
+        }
+        await mergeFacets([value.category], [value.language]);
+        editorOpen = false;
+        editingId = null;
+        servingsOverride = null;
+        await $router.navigate('/recipe?id=' + encodeURIComponent(currentId));
+        render();
+      } catch (error) {
+        status.textContent = 'Save failed: ' + error.message;
+      }
+    }
+    els('fav-filter').addEventListener('click', () => {
+      favoritesOnly = !favoritesOnly;
+      const toggle = els('fav-filter');
+      toggle.textContent = favoritesOnly ? '★ Favorites' : '☆ Favorites';
+      toggle.classList.toggle('ghost', !favoritesOnly);
+      toggle.classList.toggle('secondary', favoritesOnly);
+      void runBrowse(true);
+    });
+    els('new-recipe').addEventListener('click', () => openEditor(null));
+    els('editor-cancel').addEventListener('click', () => {
+      editorOpen = false;
+      editingId = null;
+      render();
+    });
+    els('editor-save').addEventListener('click', () => { void saveEditor(); });
+    els('match-photos').addEventListener('click', () => { void matchPhotos(); });
+    els('bundle-filter').addEventListener('input', updateBundleCount);
+    let catalogSearchTimer = null;
+    ['catalog-search', 'catalog-category', 'catalog-rating', 'catalog-kcal', 'catalog-sort'].forEach((id) => els(id).addEventListener('input', () => {
+      if (catalogSearchTimer) clearTimeout(catalogSearchTimer);
+      catalogSearchTimer = setTimeout(catalogSearch, 150);
+    }));
+    els('catalog-list').addEventListener('click', async (event) => {
+      if (event.target.closest('[data-catalog-more]')) {
+        catalog.shown = Math.min(catalog.results.length, catalog.shown + CATALOG_PAGE);
+        renderCatalog();
+        return;
+      }
+      const item = event.target.closest('[data-catalog-open]');
+      if (item) await $router.navigate('/catalog?id=' + encodeURIComponent(item.dataset.catalogOpen));
+    });
+    els('catalog-status').addEventListener('click', (event) => {
+      if (event.target.closest('[data-catalog-retry]')) {
+        catalog.state = 'idle';
+        void ensureCatalog();
+      }
+    });
+    els('catalog-detail').addEventListener('click', async (event) => {
+      if (event.target.closest('[data-back]')) {
+        await $router.navigate('/catalog');
+        return;
+      }
+      const open = event.target.closest('[data-open-book]');
+      if (open) {
+        currentId = open.dataset.openBook;
+        currentRecipeData = null;
+        servingsOverride = null;
+        await $router.navigate('/recipe?id=' + encodeURIComponent(currentId));
+        return;
+      }
+      if (event.target.closest('[data-catalog-add]')) await addCatalogRecipe();
+    });
+  </script>
+</body>
+
+</html>

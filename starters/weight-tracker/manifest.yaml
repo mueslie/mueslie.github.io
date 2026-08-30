@@ -1,0 +1,75 @@
+name: Weight Tracker
+icon: ⚖️
+color: '#c2410c'
+routes:
+  - path: /
+    label: Log
+    icon: list
+  - path: /add
+    label: Add weight
+    icon: home
+permissions:
+  host:
+    contacts: true
+    sharing: true
+bindings:
+  events:
+    - id: weight.history
+      label: Progress shared
+      description: One member's full weigh-in history (dates and weights only — notes
+        stay private) plus their optional goal weight. Re-sending replaces the
+        previous snapshot.
+      payload:
+        - name: memberName
+          type: string
+        - name: history
+          type: json
+          required: true
+        - name: target
+          type: number
+  actions:
+    - id: weight.history.receive
+      label: Receive buddy progress
+      payload:
+        - name: memberName
+          type: string
+        - name: history
+          type: json
+          required: true
+        - name: target
+          type: number
+channels:
+  shares:
+    - id: weight-share
+      label: Progress buddies
+      events:
+        - weight.history
+      actions:
+        - weight.history.receive
+      routes:
+        - eventId: weight.history
+          actionId: weight.history.receive
+      maxParticipants: 8
+entities:
+  - id: weights
+    name: Weights
+    icon: ⚖️
+    color: "#c2410c"
+    fields:
+      - id: date
+        name: Date
+        type: date
+        required: true
+      - id: weight
+        name: Weight (kg)
+        type: number
+        required: true
+      - id: note
+        name: Note
+        type: text
+      - id: member
+        name: Member handle
+        type: text
+      - id: memberName
+        name: Member name
+        type: text

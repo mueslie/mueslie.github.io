@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>How Dapp Builder Works</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0 auto; max-width: 46rem; padding: 2rem 1.25rem 4rem;
+         font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+         line-height: 1.6; }
+  h1 { font-size: 1.5rem; } h2 { font-size: 1.05rem; margin-top: 2rem; }
+  .muted { opacity: .7; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  p code, li code, td code { background: rgba(127,127,127,.14); padding: .1rem .35rem; border-radius: .3rem; font-size: .85em; }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; margin: 1rem 0; }
+  th, td { border: 1px solid rgba(127,127,127,.35); padding: .4rem .6rem; text-align: left; vertical-align: top; }
+  .nav { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid rgba(127,127,127,.3); font-size: .9rem; }
+  .nav a { margin-right: 1.25rem; }
+</style>
+</head>
+<body>
+<h1>How Dapp Builder Works</h1>
+<p class="muted">A plain-language tour of the architecture, data storage and synchronization. For the technical guide to building your own apps, see <a href="code-dapps.html">Building your own Code Dapps</a>.</p>
+
+<h2>The principle: your data stays with you</h2>
+<p>Dapp Builder is <strong>local-first</strong>. All data — dapp configuration, members, records, app source code — lives exclusively on your devices, stored in the browser's local database (IndexedDB). There is no central server holding your content and there are no accounts. The app works fully offline; after the first install, even the interface itself loads without a network connection thanks to a service worker.</p>
+<p>When several devices share a dapp, its content syncs directly from device to device — over encrypted WebRTC connections. Every device keeps its own conflict-free copy of the data (a CRDT, technically Yjs). Changes can therefore happen in parallel on multiple devices and are merged automatically, without data loss, the next time the devices meet.</p>
+
+<h2>How a dapp is built up</h2>
+<p>Every dapp consists of two separate documents:</p>
+<table>
+  <tr><th>Document</th><th>Contents</th></tr>
+  <tr><td><strong>Dapp document</strong></td><td>Metadata (name, icon, color), member list, optional data schema, the actual records, and generic app state.</td></tr>
+  <tr><td><strong>Source document</strong></td><td>A Code App's source files (e.g. <code>index.html</code>, <code>manifest.yaml</code>). It lives in its own database with its own sync room whose credentials are derived deterministically from the main dapp — no extra secret inside invites.</td></tr>
+</table>
+
+<h2>Synchronization: WebRTC, brokered only at first contact</h2>
+<p>Devices find each other through a <strong>signaling server</strong> that only brokers the initial introduction — like a notice board where two devices arrange to talk directly. The data transfer itself runs peer-to-peer between the devices and is end-to-end protected. The signaling operator never sees dapp content; during brokering, connection data (such as IP addresses) is exchanged between the devices as with any WebRTC connection — details in the <a href="privacy.html">privacy policy</a>.</p>
+<p>The signaling server is the only central infrastructure, and it can be self-hosted: the app accepts a custom server via the build variable <code>VITE_SIGNALING_URL</code>. In rare, very restrictive networks (e.g. strict corporate firewalls) a direct connection may fail — in every case your data remains safe locally and catches up later.</p>
+
+<h2>Identities and access control</h2>
+<p>On first start the app generates a cryptographic key pair (Ed25519) on your device. That key is your identity — no accounts, no passwords. It can be exported as an encrypted backup and restored onto other devices.</p>
+<p>Every dapp knows its members and their roles:</p>
+<ul>
+  <li><strong>Owner</strong> — manages everything: members, invites, source code, schema.</li>
+  <li><strong>Editor</strong> — may change records and app data.</li>
+  <li><strong>Viewer</strong> — read-only.</li>
+</ul>
+<p>Sensitive changes (member list, record deletions, role assignments) are <strong>cryptographically signed</strong> by the owner. Every device verifies each incoming change against these signatures: anything not properly signed is reverted automatically. Deleted records are marked with signed tombstones so older copies on other devices cannot resurrect them. A member cannot simply grant themselves more rights — all devices jointly enforce this.</p>
+
+<h2>Contacts: private pairing</h2>
+<p>Before you can share a dapp with someone, a relationship is established through <strong>pairing</strong>: one person creates a short-lived, signed invite (<code>relationship://pair/…</code>) which is entered on the second device. The invite opens a one-time lobby; both sides see the other's signed request and approve deliberately. For verification, both devices display the same <strong>safety number</strong> derived from the two keys — if it matches on both screens, the connection has not been tampered with.</p>
+<p>Each pairing receives its own relationship identity and its own encrypted control room. Isolating people from one another is a core principle: what you share with person A is technically invisible to person B.</p>
+
+<h2>Sharing dapps: offers, isolated channels, revocation</h2>
+<p>Sharing a dapp runs over the control room of the respective relationship:</p>
+<ol>
+  <li>The sender creates a <strong>signed offer</strong> (with app metadata and optionally the signed app package).</li>
+  <li>The recipient sees the offer in their inbox ("People &amp; Sharing") and decides consciously — for attached app packages including a mandatory preview and signature verification before installation. Open requests expire after ten minutes.</li>
+  <li>Upon acceptance, a <strong>separate, isolated data channel</strong> is created for exactly this app and this relationship. The control room itself never carries app data — only control messages (offers, acknowledgements, revocations).</li>
+  <li>A <strong>revocation</strong> removes exactly that channel — other shared apps with the same person remain untouched.</li>
+</ol>
+<p>Pending offers remain visible as inbox entries and can be revoked at any time — even if the other device never received them. App packages (<code>.dapp.json</code>) contain only metadata and source code, never records, members or credentials; installation always creates fresh, independent credentials.</p>
+
+<h2>Code dapps: your app inside a sandbox</h2>
+<p>An app's visible part is a <strong>Code App</strong>: a synchronized <code>index.html</code> running inside a strictly separated sandbox (an iframe with an opaque origin). Network access, external scripts, nested frames and forms are blocked by a content security policy; the app talks to the framework through a small, role-checked API (<code>$data</code>, <code>$store</code>, <code>$router</code> and friends). How to build your own Code Apps is explained in <a href="code-dapps.html">Building your own Code Dapps</a>. Four ready-made starter apps (To-Do List, Shared Expenses, Diary, Group Chat) serve as templates and can be modified freely.</p>
+
+<h2>Install as an app</h2>
+<p>Dapp Builder is an installable web app (PWA): via your browser's menu ("Add to home screen" / "Install app") it gets its own icon and its own window without browser chrome. Installing additionally protects local data — notably on iOS, where non-installed web apps may have their data evicted after seven days of disuse. Once installed, the app starts even without an internet connection.</p>
+
+<h2>Control by agents (MCP)</h2>
+<p>For automated use, an optional MCP server (Model Context Protocol) running locally on your machine provides programmatic access: creating and joining dapps, creating and accepting invites, managing schemas and records. It speaks stdio only and uses the same signed protocols as the app itself — agents cannot write anything a real device could not.</p>
+
+<h2>What deliberately does <em>not</em> happen</h2>
+<ul>
+  <li>No central storage of your dapps, records or source code.</li>
+  <li>No accounts, no cookies, no tracking, no analytics, no external CDNs.</li>
+  <li>No sharing of data with third parties — synchronization runs directly between your devices and those of your contacts.</li>
+</ul>
+
+<div class="nav">
+  <a href="/">App</a>
+  <a href="how-it-works.html">How it works</a>
+  <a href="code-dapps.html">Build code dapps</a>
+  <a href="imprint.html">Imprint</a>
+  <a href="privacy.html">Privacy</a>
+</div>
+</body>
+</html>

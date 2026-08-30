@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Meal Planner</title>
+  <style>
+    :root {
+      --accent: #1f7a55
+    }
+
+    :root {
+      color-scheme: light;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f7f7fb;
+      color: #1d1d29
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    [hidden] {
+      display: none !important
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      overflow-x: hidden
+    }
+
+    body {
+      padding: max(18px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left))
+    }
+
+    main {
+      width: min(900px, 100%);
+      margin: 0 auto
+    }
+
+    .hero {
+      margin-bottom: 18px
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(1.65rem, 7vw, 2.4rem);
+      letter-spacing: -.045em
+    }
+
+    .hero p {
+      margin: 7px 0 0;
+      color: #686879;
+      line-height: 1.5
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e8e7ef;
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 10px 32px rgba(35, 31, 66, .06);
+      margin-bottom: 16px
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center
+    }
+
+    .wrap {
+      flex-wrap: wrap
+    }
+
+    .grow {
+      flex: 1;
+      min-width: 0
+    }
+
+    .stack {
+      display: grid;
+      gap: 12px
+    }
+
+    .muted {
+      color: #717184;
+      font-size: .9rem
+    }
+
+    .empty {
+      text-align: center;
+      color: #78788a;
+      padding: 30px 12px
+    }
+
+    .notice {
+      padding: 11px 13px;
+      border-radius: 12px;
+      background: #fff7df;
+      color: #705a16;
+      font-size: .84rem;
+      line-height: 1.45
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+      font-size: 16px
+    }
+
+    button {
+      min-height: 44px;
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 15px;
+      font-weight: 750;
+      cursor: pointer;
+      background: var(--accent);
+      color: white
+    }
+
+    button.secondary {
+      background: #eeedf5;
+      color: #333244
+    }
+
+    button.ghost {
+      background: transparent;
+      color: #55536a;
+      border: 1px solid #dedde7
+    }
+
+    button:disabled {
+      opacity: .55;
+      cursor: not-allowed
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid #d9d8e2;
+      border-radius: 11px;
+      padding: 10px 12px;
+      background: white;
+      color: #20202b
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      font-size: .86rem;
+      font-weight: 700;
+      color: #505062
+    }
+
+    .cal {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 5px
+    }
+
+    .cal-head {
+      font-size: .72rem;
+      font-weight: 800;
+      color: #8b8a99;
+      text-transform: uppercase;
+      text-align: center;
+      padding: 4px 0
+    }
+
+    .day {
+      min-height: 82px;
+      border: 1px solid #efedf4;
+      border-radius: 10px;
+      padding: 5px;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      cursor: pointer
+    }
+
+    .day.other {
+      opacity: .4
+    }
+
+    .day.today {
+      border-color: var(--accent);
+      border-width: 2px
+    }
+
+    .dnum {
+      font-size: .74rem;
+      font-weight: 800;
+      color: #8b8a99
+    }
+
+    .meal {
+      font-size: .72rem;
+      font-weight: 700;
+      background: #e7f4ee;
+      color: #175c41;
+      border-radius: 7px;
+      padding: 2px 5px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: flex;
+      gap: 4px;
+      align-items: center
+    }
+
+    .meal.done {
+      background: #eeedf5;
+      color: #8b8a99;
+      text-decoration: line-through
+    }
+
+    .meal.skipped {
+      background: #fdecec;
+      color: #9c3535;
+      text-decoration: line-through
+    }
+
+    .meal img {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      object-fit: cover
+    }
+
+    .item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #efedf4
+    }
+
+    .item:last-child {
+      border-bottom: 0
+    }
+
+    .item-title {
+      font-weight: 750;
+      overflow-wrap: anywhere
+    }
+
+    .item.done .item-title {
+      text-decoration: line-through;
+      color: #858493
+    }
+
+    .thumb {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      object-fit: cover;
+      background: #e7f4ee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: none
+    }
+
+    .actions {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap
+    }
+
+    .actions button {
+      min-height: 40px;
+      padding: 7px 11px
+    }
+
+    @media(max-width:640px) {
+      body {
+        padding-left: 10px;
+        padding-right: 10px
+      }
+
+      .card {
+        padding: 13px;
+        border-radius: 15px
+      }
+
+      .day {
+        min-height: 64px
+      }
+
+      .row.mobile-stack {
+        align-items: stretch;
+        flex-direction: column
+      }
+
+      .row.mobile-stack button {
+        width: 100%
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <header class="hero">
+      <h1>Meal Planner</h1>
+      <p>Plan meals on a calendar — recipes arrive from your Recipe Book with one tap.</p>
+    </header>
+    <section id="calendar-view" hidden>
+      <div class="card">
+        <div class="row" style="margin-bottom:10px"><button type="button" class="secondary" id="prev-month">←</button>
+          <h2 id="month-label" class="grow" style="margin:0;text-align:center;font-size:1.1rem"></h2><button type="button" class="secondary" id="next-month">→</button>
+        </div>
+        <div class="cal" id="cal-grid"></div>
+      </div>
+      <div class="card stack">
+        <h3 style="margin:0">Add a meal manually</h3>
+        <div class="row wrap"><input id="new-title" class="grow" placeholder="Meal name" maxlength="120"><input id="new-date" type="date" style="max-width:170px"></div>
+        <div class="row mobile-stack"><button type="button" id="add-meal" class="grow">Add meal</button></div>
+      </div>
+      <div id="day-detail" class="card" hidden></div>
+    </section>
+    <section id="inbox-view" hidden>
+      <div class="card">
+        <h3 style="margin:0 0 8px">Unscheduled meals</h3>
+        <p class="muted">Meals sent from the Recipe Book without a date, or taken off a day, wait here.</p>
+        <div id="inbox-list"></div>
+      </div>
+    </section>
+    <div id="status" class="muted" aria-live="polite"></div>
+  </main>
+  <script>
+    const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    } [c]));
+    const safeThumb = (v) => typeof v === 'string' && /^data:image\/(jpeg|webp|png);base64,[A-Za-z0-9+/]+={0,2}$/.test(v) && v.length <= 12000 ? v : '';
+    const iso = (d) => d.toISOString().slice(0, 10);
+    let meals = [];
+    let route = '/';
+    let monthCursor = new Date();
+    monthCursor.setDate(1);
+    let selectedDay = null;
+    const els = (id) => document.getElementById(id);
+
+    function mealsOn(date) {
+      return meals.filter((m) => m.date === date)
+    }
+
+    function recipeLink(meal) {
+      return meal.sourceDappId && meal.recipeId ? '/dapp/' + encodeURIComponent(meal.sourceDappId) + '/app/recipe?id=' + encodeURIComponent(meal.recipeId) : null
+    }
+
+    function renderCalendar() {
+      const year = monthCursor.getFullYear();
+      const month = monthCursor.getMonth();
+      els('month-label').textContent = monthCursor.toLocaleDateString(undefined, {
+        month: 'long',
+        year: 'numeric'
+      });
+      const first = new Date(Date.UTC(year, month, 1));
+      const startOffset = (first.getUTCDay() + 6) % 7;
+      const cells = [];
+      const today = iso(new Date());
+      for (let i = 0; i < 42; i++) {
+        const day = new Date(Date.UTC(year, month, 1 - startOffset + i));
+        cells.push(day);
+      }
+      els('cal-grid').innerHTML = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => '<div class="cal-head">' + d + '</div>').join('') + cells.map((day) => {
+        const date = iso(day);
+        const inMonth = day.getUTCMonth() === month;
+        const dayMeals = mealsOn(date);
+        return '<div class="day' + (inMonth ? '' : ' other') + (date === today ? ' today' : '') + '" data-day="' + date + '"><span class="dnum">' + day.getUTCDate() + '</span>' + dayMeals.slice(0, 3).map((m) => {
+          const thumb = safeThumb(m.thumb);
+          return '<span class="meal ' + esc(m.status || '') + '">' + (thumb ? '<img alt="" src="' + thumb + '">' : '') + esc(m.title) + '</span>';
+        }).join('') + (dayMeals.length > 3 ? '<span class="muted" style="font-size:.68rem">+' + (dayMeals.length - 3) + ' more</span>' : '') + '</div>';
+      }).join('');
+      renderDayDetail();
+    }
+
+    function renderDayDetail() {
+      const box = els('day-detail');
+      if (!selectedDay) {
+        box.hidden = true;
+        return;
+      }
+      const dayMeals = mealsOn(selectedDay);
+      box.hidden = false;
+      box.innerHTML = '<div class="row" style="margin-bottom:6px"><h3 class="grow" style="margin:0">' + esc(selectedDay) + '</h3><button type="button" class="ghost" data-close-day>Close</button></div>' + (dayMeals.length ? dayMeals.map((m) => mealRow(m, true)).join('') : '<div class="empty">Nothing planned for this day.</div>');
+    }
+
+    function mealRow(meal, withDate) {
+      const thumb = safeThumb(meal.thumb);
+      const link = recipeLink(meal);
+      const done = meal.status === 'done';
+      const skipped = meal.status === 'skipped';
+      return '<div class="item' + (done || skipped ? ' done' : '') + '">' + (thumb ? '<img class="thumb" alt="" src="' + thumb + '">' : '<span class="thumb">🍽️</span>') + '<span class="grow"><span class="item-title">' + esc(meal.title) + '</span><span class="muted" style="display:block">' + (meal.servings ? esc(String(meal.servings)) + ' servings' : '') + (skipped ? ' · skipped' : done ? ' · cooked' : '') + '</span></span>' + '<span class="actions">' + (link ? '<a href="' + esc(link) + '"><button type="button" class="ghost">Open recipe</button></a>' : '') + '<input type="date" value="' + esc(meal.date || '') + '" data-move="' + esc(meal.id) + '" style="min-width:150px;max-width:160px">' + '<button type="button" class="secondary" data-toggle-done="' + esc(meal.id) + '">' + (done ? 'Undo' : 'Cooked ✓') + '</button>' + '<button type="button" class="ghost" data-toggle-skip="' + esc(meal.id) + '">' + (skipped ? 'Restore' : 'Skip') + '</button>' + '<button type="button" class="ghost" data-remove="' + esc(meal.id) + '">Delete</button></span></div>';
+    }
+
+    function renderInbox() {
+      const unscheduled = meals.filter((m) => !m.date);
+      els('inbox-list').innerHTML = unscheduled.length ? unscheduled.map((m) => mealRow(m, false)).join('') : '<div class="empty">No unscheduled meals.</div>';
+    }
+
+    function render() {
+      els('calendar-view').hidden = route !== '/';
+      els('inbox-view').hidden = route !== '/inbox';
+      if (route === '/') renderCalendar();
+      else renderInbox();
+    }
+    Dapp.onReady(async () => {
+      await $actions.handle('meal.receive', async (payload) => {
+        const title = String(payload.title || '').slice(0, 120);
+        if (!title) throw new Error('Meal has no title');
+        await $store.create('meals', {
+          title,
+          date: typeof payload.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(payload.date) ? payload.date : '',
+          status: 'planned',
+          servings: Number(payload.servings) || null,
+          recipeId: String(payload.recipeId || ''),
+          sourceDappId: String(payload.sourceDappId || ''),
+          thumb: safeThumb(payload.thumb)
+        });
+      });
+      route = $router.current();
+      $router.subscribe((next) => {
+        route = next;
+        render();
+      });
+      await $store.subscribe('meals', {}, (rows) => {
+        meals = rows;
+        render();
+      });
+    });
+    els('prev-month').addEventListener('click', () => {
+      monthCursor.setMonth(monthCursor.getMonth() - 1);
+      renderCalendar();
+    });
+    els('next-month').addEventListener('click', () => {
+      monthCursor.setMonth(monthCursor.getMonth() + 1);
+      renderCalendar();
+    });
+    els('cal-grid').addEventListener('click', (event) => {
+      const cell = event.target.closest('[data-day]');
+      if (!cell) return;
+      selectedDay = cell.dataset.day;
+      renderDayDetail();
+      els('day-detail').scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest'
+      });
+    });
+    document.getElementById('add-meal').addEventListener('click', async () => {
+      const title = els('new-title').value.trim();
+      if (!title) {
+        els('status').textContent = 'Give the meal a name first.';
+        return;
+      }
+      await $store.create('meals', {
+        title,
+        date: els('new-date').value || '',
+        status: 'planned'
+      });
+      els('new-title').value = '';
+      els('status').textContent = 'Meal added.';
+    });
+    async function handleMealAction(event) {
+      const target = event.target;
+      const move = target.closest('[data-move]');
+      if (move && event.type === 'change') {
+        await $store.update('meals', move.dataset.move, {
+          date: move.value || ''
+        });
+        return;
+      }
+      if (event.type !== 'click') return;
+      const done = target.closest('[data-toggle-done]');
+      if (done) {
+        const meal = meals.find((m) => m.id === done.dataset.toggleDone);
+        if (meal) await $store.update('meals', meal.id, {
+          status: meal.status === 'done' ? 'planned' : 'done'
+        });
+        return;
+      }
+      const skip = target.closest('[data-toggle-skip]');
+      if (skip) {
+        const meal = meals.find((m) => m.id === skip.dataset.toggleSkip);
+        if (meal) await $store.update('meals', meal.id, {
+          status: meal.status === 'skipped' ? 'planned' : 'skipped'
+        });
+        return;
+      }
+      const remove = target.closest('[data-remove]');
+      if (remove) {
+        await $store.delete('meals', remove.dataset.remove);
+        return;
+      }
+      if (target.closest('[data-close-day]')) {
+        selectedDay = null;
+        renderDayDetail();
+      }
+    }
+    els('day-detail').addEventListener('click', handleMealAction);
+    els('day-detail').addEventListener('change', handleMealAction);
+    els('inbox-list').addEventListener('click', handleMealAction);
+    els('inbox-list').addEventListener('change', handleMealAction);
+  </script>
+</body>
+
+</html>

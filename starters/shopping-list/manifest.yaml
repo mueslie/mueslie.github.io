@@ -1,0 +1,44 @@
+name: Shopping List
+icon: 🛒
+color: '#4459c9'
+routes:
+  - path: /
+    label: List
+    icon: dashboard
+bindings:
+  actions:
+    - id: shopping.receive
+      label: Receive meal ingredients
+      description: Accepts 'Meal planned' events from a Recipe Book and merges the
+        scaled ingredients into the list.
+      payload:
+        - name: title
+          type: string
+          required: true
+        - name: servings
+          type: number
+        - name: ingredients
+          type: json
+          required: true
+entities:
+  - id: items
+    name: Shopping items
+    icon: 🛒
+    color: "#4459c9"
+    fields:
+      - id: name
+        name: Item
+        type: text
+        required: true
+      - id: amount
+        name: Amount
+        type: number
+      - id: unit
+        name: Unit
+        type: text
+      - id: sources
+        name: From recipes
+        type: text
+      - id: checked
+        name: In the cart
+        type: boolean

@@ -1,0 +1,15 @@
+name: App Studio
+icon: 🎨
+color: '#7c3aed'
+routes:
+  - path: /
+    label: App
+    icon: home
+  - path: /studio
+    label: Studio
+    icon: settings
+permissions:
+  host:
+    files: true
+storage:
+  recordFormat: compact

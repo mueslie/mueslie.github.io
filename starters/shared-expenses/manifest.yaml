@@ -1,0 +1,133 @@
+name: Shared Expenses
+icon: 💸
+color: '#0d8f78'
+routes:
+  - path: /
+    label: Balances
+    icon: dashboard
+  - path: /expenses
+    label: Expenses
+    icon: list
+  - path: /add
+    label: Add expense
+    icon: home
+permissions:
+  host:
+    contacts: true
+    sharing: true
+bindings:
+  events:
+    - id: expense.shared
+      label: Expense shared
+      payload:
+        - name: expenseId
+          type: string
+          required: true
+        - name: payerId
+          type: string
+          required: true
+        - name: payerName
+          type: string
+          required: true
+        - name: amount
+          type: number
+          required: true
+        - name: splitAmongIds
+          type: string[]
+          required: true
+        - name: note
+          type: string
+        - name: date
+          type: string
+          required: true
+  actions:
+    - id: expense.receive
+      label: Receive expense
+      payload:
+        - name: expenseId
+          type: string
+          required: true
+        - name: payerId
+          type: string
+          required: true
+        - name: payerName
+          type: string
+          required: true
+        - name: amount
+          type: number
+          required: true
+        - name: splitAmongIds
+          type: string[]
+          required: true
+        - name: note
+          type: string
+        - name: date
+          type: string
+          required: true
+roles:
+  - id: settle-up
+    label: Settle up
+    extends: editor
+    description: May record payments as received when also permitted by the framework role.
+channels:
+  shares:
+    - id: expense-settlement
+      label: Expense settlement
+      events:
+        - expense.shared
+      actions:
+        - expense.receive
+      routes:
+        - eventId: expense.shared
+          actionId: expense.receive
+      maxParticipants: 1
+entities:
+  - id: members
+    name: Members
+    icon: 👥
+    color: "#0d8f78"
+    fields:
+      - id: name
+        name: Name
+        type: text
+        required: true
+      - id: handle
+        name: Contact handle
+        type: text
+      - id: instanceId
+        name: Share instance
+        type: text
+  - id: expenses
+    name: Expenses
+    icon: 🧾
+    color: "#0d8f78"
+    fields:
+      - id: payerId
+        name: Payer ID
+        type: text
+        required: true
+      - id: payerName
+        name: Payer
+        type: text
+        required: true
+      - id: amount
+        name: Amount
+        type: number
+        required: true
+      - id: splitAmongIds
+        name: Split among IDs
+        type: text
+        required: true
+      - id: note
+        name: Note
+        type: text
+      - id: date
+        name: Date
+        type: date
+        required: true
+      - id: settled
+        name: Settled
+        type: boolean
+      - id: settledAt
+        name: Settled at
+        type: datetime

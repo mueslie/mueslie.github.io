@@ -1,0 +1,103 @@
+name: Group Chat
+icon: 💬
+color: '#3478c8'
+routes:
+  - path: /
+    label: Chat
+    icon: home
+permissions:
+  host:
+    contacts: true
+    sharing: true
+    files: true
+bindings:
+  events:
+    - id: message.sent
+      label: Message sent
+      payload:
+        - name: messageId
+          type: string
+          required: true
+        - name: text
+          type: string
+          required: true
+        - name: relayAuthorId
+          type: string
+        - name: relayAuthorName
+          type: string
+        - name: photoDataUrl
+          type: string
+        - name: sentAt
+          type: string
+          required: true
+  actions:
+    - id: message.receive
+      label: Receive message
+      payload:
+        - name: messageId
+          type: string
+          required: true
+        - name: text
+          type: string
+          required: true
+        - name: relayAuthorId
+          type: string
+        - name: relayAuthorName
+          type: string
+        - name: photoDataUrl
+          type: string
+        - name: sentAt
+          type: string
+          required: true
+roles:
+  - id: spectator
+    label: Spectator
+    extends: viewer
+    description: Read-only when paired with a viewer framework role.
+channels:
+  shares:
+    - id: group-chat
+      label: Group chat
+      events:
+        - message.sent
+      actions:
+        - message.receive
+      routes:
+        - eventId: message.sent
+          actionId: message.receive
+      maxParticipants: 16
+entities:
+  - id: messages
+    name: Messages
+    icon: 💬
+    color: "#3478c8"
+    fields:
+      - id: messageId
+        name: Message ID
+        type: text
+        required: true
+      - id: authorId
+        name: Author ID
+        type: text
+        required: true
+      - id: authorName
+        name: Author
+        type: text
+        required: true
+      - id: text
+        name: Message
+        type: text
+        required: true
+      - id: photoDataUrl
+        name: Compressed photo
+        type: text
+      - id: photoFileId
+        name: Photo file
+        type: text
+      - id: photoFileName
+        name: Photo file name
+        type: text
+      - id: sentAt
+        name: Sent at
+        type: datetime
+        required: true

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Building Your Own Code Dapps</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0 auto; max-width: 46rem; padding: 2rem 1.25rem 4rem;
+         font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+         line-height: 1.6; }
+  h1 { font-size: 1.5rem; } h2 { font-size: 1.05rem; margin-top: 2rem; } h3 { font-size: .95rem; margin-top: 1.5rem; }
+  .muted { opacity: .7; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  p code, li code, td code { background: rgba(127,127,127,.14); padding: .1rem .35rem; border-radius: .3rem; font-size: .85em; }
+  pre { background: rgba(127,127,127,.12); padding: .75rem 1rem; border-radius: .5rem; overflow-x: auto;
+        font-size: .82rem; line-height: 1.5; }
+  pre code { background: none; padding: 0; }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; margin: 1rem 0; }
+  th, td { border: 1px solid rgba(127,127,127,.35); padding: .4rem .6rem; text-align: left; vertical-align: top; }
+  .nav { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid rgba(127,127,127,.3); font-size: .9rem; }
+  .nav a { margin-right: 1.25rem; }
+</style>
+</head>
+<body>
+<h1>Building Your Own Code Dapps</h1>
+<p class="muted">The technical guide. For what a Code App is and how the system as a whole works, see <a href="how-it-works.html">How Dapp Builder Works</a>.</p>
+
+<h2>What is a Code Dapp?</h2>
+<p>A Code Dapp is an app whose entire UI comes from a synchronized <code>index.html</code> — with any HTML, CSS and JavaScript you like. The files live as a document inside Dapp Builder, sync automatically to every member's devices, and run there inside a secure sandbox. You need no build step, no repository and no server: write code in the built-in editor, save — and every device immediately runs the new version.</p>
+
+<h2>Quick start</h2>
+<ol>
+  <li>Create a new dapp on the home page (or start from a starter app).</li>
+  <li>Open the dapp and its <strong>code editor</strong> (owner role). It contains <code>index.html</code> and <code>manifest.yaml</code>.</li>
+  <li>Build your UI in <code>index.html</code>. The APIs described below (<code>$store</code>, <code>$router</code>, …) are available before your scripts run.</li>
+  <li>Declare your navigation in <code>manifest.yaml</code>. Saving is enough — changes sync live to all devices.</li>
+</ol>
+
+<h2>Sandbox and security</h2>
+<p>Your code runs in an iframe with an <em>opaque origin</em>: it has no same-origin access to Dapp Builder or any other page. Native dialogs (<code>alert()</code>, <code>confirm()</code>, <code>prompt()</code>) work. The runtime content security policy blocks external scripts, network requests, nested frames, forms and objects. Relative and HTTP(S) links open your app at the top-level tab (only via real user activation); <code>javascript:</code> and <code>data:</code> targets are stripped.</p>
+<p>Importantly: your code never gets direct access to the Yjs documents, members or credentials — only the role-checked façade described below. Writes require an owner or editor role; viewers read. Editing source code is owner-only.</p>
+
+<h2>The runtime APIs</h2>
+
+<h3><code>Dapp.onReady()</code></h3>
+<pre><code>Dapp.onReady((context) => {
+  // context.meta — name, icon, color
+  // context.role — framework role ('owner' | 'editor' | 'viewer')
+  // context.identity — this device's identity
+  // context.roles / context.appRole — declared & assigned app roles
+})</code></pre>
+
+<h3><code>$data</code> — simple JSON state</h3>
+<pre><code>await $data.set('count', 1)
+const count = await $data.get('count')
+const snapshot = await $data.snapshot()
+const unsubscribe = await $data.subscribe((state) => { /* ... */ })</code></pre>
+<p>Keys up to 128 characters, values JSON-serializable up to 256&nbsp;KB. Synced via the dapp document.</p>
+
+<h3><code>$store</code> — record collections</h3>
+<pre><code>const tasks = await $store.query('Tasks', { status: 'open' })
+const task = await $store.create('Tasks', { title: 'Test' })
+await $store.update('Tasks', task.id, { status: 'done' })
+await $store.delete('Tasks', task.id)
+
+const unsubscribe = await $store.subscribe('Tasks', { status: 'open' }, (records) => { /* ... */ })</code></pre>
+<p>Collection names are created lazily on first write; existing schema entities (name or UUID) stay compatible. Subscriptions filter by field values.</p>
+
+<h3><code>$router</code> — navigation</h3>
+<pre><code>$router.current()            // current route, e.g. '/tasks'
+$router.search()             // query string including '?'
+$router.query('task')        // single parameter or null
+await $router.navigate('/tasks')
+const unsub = $router.subscribe((path) => { /* toggle views */ })
+
+$router.chrome()             // 'standard' | 'fullscreen'
+await $router.setChrome('fullscreen')</code></pre>
+<p>Only routes declared in the manifest are reachable (hidden ones included). Sidebar navigation, browser back/forward, shared links and in-app navigation all change the same route without restarting the app. Chrome switching preserves JavaScript state.</p>
+
+<h3><code>$events</code> and <code>$actions</code> — app-to-app wiring</h3>
+<pre><code>// Sender (event id must be declared under manifest.bindings.events)
+await $events.publish('game.move', { from: 'e2', to: 'e4' })
+
+// Receiver (action id must be declared under manifest.bindings.actions)
+const unregister = await $actions.handle('game.move.apply', async (payload, { deliveryId }) => {
+  /* ... */
+})</code></pre>
+<p>Connections between two Code Dapps are approved per pair in <strong>Settings → Code App Bindings</strong>. Payloads are validated against the schemas declared in the manifests, and projected if the source declares one.</p>
+
+<h3><code>$roles</code> — your own app roles</h3>
+<pre><code>const mine = $roles.current()                 // { id, label, extends } | null
+const declared = $roles.list()                // roles from the manifest
+const assignments = await $roles.assignments() // owner/editor
+await $roles.assign(publicKey, 'player')       // owner only</code></pre>
+
+<h3><code>$ui</code>, <code>$contacts</code>, <code>$share</code> — requesting framework surfaces</h3>
+<pre><code>await $ui.openCodeEditor({ file: 'index.html' })   // owner only
+await $ui.openSettings({ section: 'sharing' })
+const contacts = await $contacts.pick()            // only user-picked contacts
+await $share.open()                                // opens the framework's share surface</code></pre>
+<p>Each of these calls must be enabled under <code>permissions.host</code> in the manifest (see below), otherwise it fails. Calls resolve when the opened surface closes again; <code>{ opened: false }</code> means politely declined (e.g. a dialog was already open).</p>
+
+<h2>The manifest.yaml</h2>
+<pre><code># Comments are welcome — the manifest is YAML (JSON also parses).
+name: Task Manager
+routes:
+  - path: /
+    label: Overview
+    icon: home
+  - path: /tasks
+    label: Tasks
+    icon: list
+  - path: /internal      # reachable by navigate(), hidden from the nav
+    label: Internal
+    icon: settings
+    hidden: true
+roles:
+  - { id: player, label: Player, extends: editor }
+  - { id: spectator, label: Spectator, extends: viewer }
+display:
+  chrome: standard
+permissions:
+  host: { settings: true, contacts: true, sharing: true }</code></pre>
+
+<table>
+  <tr><th>Field</th><th>Meaning</th></tr>
+  <tr><td><code>routes</code></td><td>1–32 routes. Paths start with <code>/</code>, URL-safe, no query/hash/<code>..</code>. Icons: <code>home</code>, <code>list</code>, <code>dashboard</code>, <code>settings</code>, <code>code</code>. <code>"hidden": true</code> only hides a route from the sidebar — it stays reachable by URL and <code>$router.navigate()</code> (presentation, never access control).</td></tr>
+  <tr><td><code>roles</code></td><td>Up to 16 app roles. <code>extends</code> is required and is a <strong>ceiling</strong>: a role extending <code>viewer</code> cannot write — whatever your app logic does. Enforcement always uses the real framework role; app roles are labels for your own logic.</td></tr>
+  <tr><td><code>display.chrome</code></td><td><code>"standard"</code> (with sidebar) or <code>"fullscreen"</code>. URLs always win: <code>/dapp/:id/app/…</code> shows chrome, <code>/dapp/:id/full/…</code> hides it. In fullscreen a framework-rendered return button appears that your app cannot remove.</td></tr>
+  <tr><td><code>permissions.host</code></td><td>Enables <code>$ui.openSettings</code>/<code>$ui.openCodeEditor</code> plus <code>$contacts.pick()</code> and <code>$share.open()</code>. Without the flag: failure (fail-closed).</td></tr>
+</table>
+<p>Role assignments are made by the owner via <code>$roles.assign()</code>; they are Ed25519-signed into the dapp document and verified on every device like member changes.</p>
+
+<h2>Exporting, importing, sharing</h2>
+<p>From the dapp settings you can export a signed <strong><code>.dapp.json</code></strong> package: metadata and source code — never records, members or credentials. Import on the home page verifies signature and fingerprint, shows a mandatory capability preview, and installs with fresh credentials and an empty data set.</p>
+<p>When sharing a dapp with a contact you can attach the package directly: it travels signed and encrypted inside the relationship control channel, stays inert in the recipient's inbox until they choose "Review attached app" and consciously install. Only then is the channel bound to the newly created local dapp.</p>
+
+<h2>Learn from the starter apps</h2>
+<p>The home page ships four complete, editable apps — the fastest way to working patterns for <code>$store</code> CRUD, routes, events, channels and image handling:</p>
+<ul>
+  <li><strong>To-Do List</strong> — free-form <code>$store</code> collections, CRUD with subscriptions, routes, a typed event.</li>
+  <li><strong>Shared Expenses</strong> — local balance computation and bilateral sharing of debt slices over channels, the <code>settle-up</code> app role.</li>
+  <li><strong>Diary</strong> — photo compression with size limits, attachments in channel messages, fullscreen reader with exit control.</li>
+  <li><strong>Group Chat</strong> — channels to 1–16 selected contacts, message ordering, relay model without global identity keys, optional photos.</li>
+</ul>
+<p>All starters use minimum 44&nbsp;px touch targets, single-column layouts below 560&nbsp;px width and explicit <code>type="button"</code> handlers — good examples for your own apps, especially on phones.</p>
+
+<h2>Current limits</h2>
+<ul>
+  <li>The runtime boots a single, persistent <code>index.html</code>; routes toggle views within that one app. Additional files (custom <code>.js</code>/<code>.css</code>/assets) are prepared for (file map in the source document), but the editor currently offers <code>index.html</code> and <code>manifest.yaml</code>.</li>
+  <li>Network requests from the sandbox are blocked — data arrives exclusively through the APIs described here.</li>
+</ul>
+
+<div class="nav">
+  <a href="/">App</a>
+  <a href="how-it-works.html">How it works</a>
+  <a href="code-dapps.html">Build code dapps</a>
+  <a href="imprint.html">Imprint</a>
+  <a href="privacy.html">Privacy</a>
+</div>
+</body>
+</html>

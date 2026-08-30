@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Weight Tracker</title><style>:root{--accent:#c2410c}
+:root{color-scheme:light;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f7f7fb;color:#1d1d29}
+*{box-sizing:border-box}[hidden]{display:none!important}html,body{margin:0;min-height:100%;overflow-x:hidden}body{padding:max(18px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+main{width:min(760px,100%);margin:0 auto}.hero{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:22px}.hero h1{margin:0;font-size:clamp(1.65rem,7vw,2.4rem);letter-spacing:-.045em}.hero p{margin:7px 0 0;color:#686879;line-height:1.5}.card{background:#fff;border:1px solid #e8e7ef;border-radius:18px;padding:18px;box-shadow:0 10px 32px rgba(35,31,66,.06);margin-bottom:16px}.row{display:flex;gap:10px;align-items:center}.wrap{flex-wrap:wrap}.grow{flex:1;min-width:0}.stack{display:grid;gap:12px}.muted{color:#717184;font-size:.9rem}.empty{text-align:center;color:#78788a;padding:30px 12px}.pill{display:inline-flex;padding:5px 9px;border-radius:999px;background:#f0eff8;color:#55536a;font-size:.78rem;font-weight:700}.notice{padding:11px 13px;border-radius:12px;background:#fff7df;color:#705a16;font-size:.84rem;line-height:1.45}.error{color:#a32222}.success{color:#236c42}
+button,input,textarea,select{font:inherit;font-size:16px}button{min-height:44px;border:0;border-radius:12px;padding:10px 15px;font-weight:750;cursor:pointer;background:var(--accent);color:white}button.secondary{background:#eeedf5;color:#333244}button.ghost{background:transparent;color:#55536a;border:1px solid #dedde7}button.danger{background:#fff0f0;color:#a12626}button:disabled{opacity:.55;cursor:not-allowed}input,textarea,select{width:100%;min-height:44px;border:1px solid #d9d8e2;border-radius:11px;padding:10px 12px;background:white;color:#20202b}textarea{min-height:130px;resize:vertical}label{display:grid;gap:6px;font-size:.86rem;font-weight:700;color:#505062}.nav{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}.nav button{white-space:nowrap}.item{display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:1px solid #efedf4}.item:last-child{border-bottom:0}.item-title{font-weight:750;overflow-wrap:anywhere}.actions{display:flex;gap:7px;flex-wrap:wrap}.actions button{min-height:40px;padding:7px 11px}.amount{font-variant-numeric:tabular-nums;font-weight:800}
+.chart-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}.chart-head h2{margin:0;font-size:1.05rem}.seg{display:inline-flex;gap:4px;background:#f0eff8;border-radius:10px;padding:3px}.seg button{min-height:32px;padding:4px 10px;border-radius:8px;background:transparent;color:#55536a;font-size:.82rem}.seg button.on{background:#fff;color:#1d1d29;box-shadow:0 1px 3px rgba(35,31,66,.14)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}.legend span{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;color:#55536a;font-weight:700}.legend i{width:12px;height:3px;border-radius:2px;display:inline-block}
+#chart-svg{width:100%;height:auto;display:block}
+@media(max-width:560px){body{padding-left:12px;padding-right:12px}.card{padding:15px;border-radius:15px}.hero{display:block}.actions button{flex:1}}
+</style></head>
+<body><main>
+<header class="hero"><div><h1>Weight Tracker</h1><p>A private weigh-in log with a glanceable summary.</p></div><span id="summary" class="pill">0 entries</span></header>
+<nav class="nav"><button data-route="/">Log</button><button class="secondary" data-route="/add">Add</button></nav>
+<section id="log-view">
+<div class="card"><div class="chart-head"><h2>Trend</h2><div class="row wrap"><div class="seg" id="chart-period"><button data-period="30">30d</button><button data-period="90" class="on">90d</button><button data-period="365">1y</button><button data-period="all">All</button></div><button class="secondary" id="share-progress" type="button">Share progress</button></div></div><div id="chart"></div><div id="chart-legend" class="legend" hidden></div><div id="share-status" class="muted" aria-live="polite" style="margin-top:8px"></div></div>
+<div class="card" id="goal-card"><h2 style="margin:0 0 6px;font-size:1.05rem">Goal</h2><div id="goal"></div></div>
+<div class="card" id="buddies-card" hidden><h2 style="margin:0 0 6px;font-size:1.05rem">Buddies</h2><div id="buddies"></div><p class="muted" style="margin:8px 0 0">Only dates, weights, and goal weights are shared — notes stay private.</p></div>
+<div class="card" id="log" aria-live="polite"></div>
+</section>
+<div id="weight-form" class="card stack" hidden><label>Date<input id="weight-date" type="date" required></label><label>Weight (kg)<input id="weight-value" type="number" min="20" max="400" step="0.1" required placeholder="82.5"></label><label>Note (optional)<input id="weight-note" maxlength="160" placeholder="Morning, post-run"></label><button id="add-weight" type="button">Add entry</button><div id="status" class="muted" aria-live="polite"></div></div></main><script>
+const esc=(value)=>String(value??'').replace(/[&<>"']/g,(char)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const els=(id)=>document.getElementById(id);
+const myName=()=>(Dapp.context&&Dapp.context.identity&&Dapp.context.identity.displayName)||'You';
+const DATE_PATTERN=/^\d{4}-\d{2}-\d{2}$/;
+const BUDDY_COLORS=['#0e7490','#7c3aed','#15803d','#b91c1c','#a16207','#0f766e','#9d174d','#4338ca'];
+let rows=[];let route='/';let chartPeriod='90';let shareInstances=[];let target=null;let buddyTargets={};let goalEditing=false;
+
+const mine=()=>rows.filter((row)=>!row.member);
+const buddies=()=>{
+  const byMember=new Map();
+  for(const row of rows){
+    if(!row.member)continue;
+    if(!byMember.has(row.member))byMember.set(row.member,{member:row.member,name:row.memberName||'Buddy',rows:[]});
+    byMember.get(row.member).rows.push(row);
+  }
+  return Array.from(byMember.values()).sort((a,b)=>a.name.localeCompare(b.name));
+};
+
+// One point per date (last write wins), sorted ascending.
+function seriesOf(list){
+  const byDate=new Map();
+  for(const row of list.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)))){
+    if(DATE_PATTERN.test(String(row.date)))byDate.set(row.date,Number(row.weight));
+  }
+  return Array.from(byDate,([date,weight])=>({date,weight}));
+}
+
+// Percent of the way from the first weigh-in to the goal (works for loss and
+// gain), clamped to 0–150 so overshoot reads as "past goal", not nonsense.
+function goalPct(points,goal){
+  if(!Array.isArray(points)||points.length<1||!Number.isFinite(goal))return null;
+  const start=points[0].weight,current=points[points.length-1].weight;
+  const total=start-goal;
+  if(Math.abs(total)<0.05)return null;
+  return Math.max(0,Math.min(150,Math.round(((start-current)/total)*100)));
+}
+
+function windowed(points){
+  if(chartPeriod==='all')return points;
+  const cutoff=new Date(Date.now()-Number(chartPeriod)*86400000).toISOString().slice(0,10);
+  return points.filter((point)=>point.date>=cutoff);
+}
+
+function renderChart(){
+  const series=[{name:myName(),color:'var(--accent)',points:windowed(seriesOf(mine())),self:true}];
+  buddies().forEach((buddy,index)=>{
+    const points=windowed(seriesOf(buddy.rows));
+    if(points.length)series.push({name:buddy.name,color:BUDDY_COLORS[index%BUDDY_COLORS.length],points:points,self:false});
+  });
+  const drawn=series.filter((line)=>line.points.length>=2);
+  const legend=els('chart-legend');
+  legend.hidden=series.length<2;
+  legend.innerHTML=series.map((line)=>'<span><i style="background:'+line.color+'"></i>'+esc(line.name)+'</span>').join('');
+  if(!drawn.length){
+    els('chart').innerHTML='<div class="empty">'+(mine().length?'Not enough entries in this period for a line — log a few more weigh-ins.':'Add at least two weigh-ins to see your trend.')+'</div>';
+    return;
+  }
+  const W=720,H=260,L=46,R=12,T=14,B=30;
+  const allPoints=drawn.flatMap((line)=>line.points);
+  const dates=allPoints.map((point)=>point.date).sort();
+  const t0=new Date(dates[0]).getTime(),t1=new Date(dates[dates.length-1]).getTime();
+  const span=Math.max(t1-t0,86400000);
+  let lo=Math.min(...allPoints.map((point)=>point.weight)),hi=Math.max(...allPoints.map((point)=>point.weight));
+  if(Number.isFinite(target)){lo=Math.min(lo,target);hi=Math.max(hi,target);}
+  const pad=Math.max((hi-lo)*0.12,0.8);lo-=pad;hi+=pad;
+  const x=(date)=>L+((new Date(date).getTime()-t0)/span)*(W-L-R);
+  const y=(weight)=>T+(1-(weight-lo)/(hi-lo))*(H-T-B);
+  let svg='';
+  for(let i=0;i<=3;i++){
+    const value=lo+(hi-lo)*(i/3);const yy=y(value);
+    svg+='<line x1="'+L+'" y1="'+yy+'" x2="'+(W-R)+'" y2="'+yy+'" stroke="#efedf4" stroke-width="1"/>'
+      +'<text x="'+(L-7)+'" y="'+(yy+4)+'" text-anchor="end" font-size="11" fill="#8a8a99">'+value.toFixed(1)+'</text>';
+  }
+  if(Number.isFinite(target)){
+    const ty=y(target);
+    svg+='<line x1="'+L+'" y1="'+ty+'" x2="'+(W-R)+'" y2="'+ty+'" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="6 5" opacity="0.65"/>'
+      +'<text x="'+(W-R)+'" y="'+(ty-5)+'" text-anchor="end" font-size="11" fill="var(--accent)">goal '+target+'</text>';
+  }
+  const fmt=(iso)=>{const d=new Date(iso);return d.toLocaleDateString(undefined,{month:'short',day:'numeric'});};
+  svg+='<text x="'+L+'" y="'+(H-8)+'" font-size="11" fill="#8a8a99">'+esc(fmt(dates[0]))+'</text>'
+    +'<text x="'+(W-R)+'" y="'+(H-8)+'" text-anchor="end" font-size="11" fill="#8a8a99">'+esc(fmt(dates[dates.length-1]))+'</text>';
+  for(const line of drawn){
+    const path=line.points.map((point)=>x(point.date).toFixed(1)+','+y(point.weight).toFixed(1)).join(' ');
+    svg+='<polyline points="'+path+'" fill="none" stroke="'+line.color+'" stroke-width="'+(line.self?2.5:2)+'" stroke-linejoin="round" stroke-linecap="round"'+(line.self?'':' opacity="0.85"')+'/>';
+    if(line.points.length<=60)for(const point of line.points)svg+='<circle cx="'+x(point.date).toFixed(1)+'" cy="'+y(point.weight).toFixed(1)+'" r="3" fill="'+line.color+'"><title>'+esc(point.date)+': '+point.weight+' kg</title></circle>';
+  }
+  els('chart').innerHTML='<svg id="chart-svg" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Weight trend chart">'+svg+'</svg>';
+}
+
+function renderBuddies(){
+  const list=buddies();
+  els('buddies-card').hidden=!list.length;
+  if(!list.length)return;
+  els('buddies').innerHTML=list.map((buddy)=>{
+    const points=seriesOf(buddy.rows);
+    const latest=points[points.length-1];const first=points[0];
+    const delta=latest&&first?latest.weight-first.weight:0;
+    const sign=delta>0?'+':'';
+    const goal=Number(buddyTargets[buddy.member]);
+    const pct=goalPct(points,goal);
+    const goalText=Number.isFinite(goal)?' · goal '+goal+' kg'+(pct!=null?' ('+pct+'%)':''):'';
+    return '<article class="item"><div class="grow"><div class="item-title">'+esc(buddy.name)+'</div><div class="muted">'+points.length+' weigh-in'+(points.length===1?'':'s')+(latest?' · last '+esc(latest.date):'')+esc(goalText)+'</div></div>'+(latest?'<span class="amount">'+latest.weight+' kg <span class="muted">('+sign+delta.toFixed(1)+')</span></span>':'')+'</article>';
+  }).join('');
+}
+
+function renderGoal(){
+  const points=seriesOf(mine());
+  const latest=points[points.length-1];
+  if(goalEditing){
+    els('goal').innerHTML='<div class="row wrap"><input id="goal-input" type="number" min="20" max="400" step="0.1" placeholder="72.0" value="'+(Number.isFinite(target)?target:'')+'" style="max-width:160px" aria-label="Target weight (kg)"><button data-goal="save">Save</button>'+(Number.isFinite(target)?'<button class="ghost" data-goal="clear">Remove goal</button>':'')+'<button class="secondary" data-goal="cancel">Cancel</button></div>';
+    return;
+  }
+  if(!Number.isFinite(target)){
+    els('goal').innerHTML='<div class="row wrap"><span class="muted grow">Set a target weight to track your progress — buddies with a goal show theirs too.</span><button class="secondary" data-goal="edit">Set goal</button></div>';
+    return;
+  }
+  const pct=goalPct(points,target);
+  const toGo=latest?latest.weight-target:null;
+  const summary=[
+    '<span class="amount">'+target+' kg</span>',
+    latest?'<span class="muted">now '+latest.weight+' kg</span>':'',
+    toGo!=null?'<span class="muted">'+(Math.abs(toGo)<0.05?'goal reached 🎉':Math.abs(toGo).toFixed(1)+' kg to go')+'</span>':'',
+    pct!=null?'<span class="pill">'+pct+'% to goal</span>':'',
+  ].filter(Boolean).join(' ');
+  els('goal').innerHTML='<div class="row wrap"><div class="grow">'+summary+'</div><button class="ghost" data-goal="edit">Edit</button></div>';
+}
+
+function render(){
+  document.querySelectorAll('[data-route]').forEach((button)=>button.className=button.dataset.route===route?'':'secondary');
+  els('log-view').hidden=route==='/add';
+  els('weight-form').hidden=route!=='/add';
+  const sorted=mine().slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  const latest=sorted[0];const previous=sorted[1];
+  let trend='';
+  if(latest&&previous){const diff=Number(latest.weight)-Number(previous.weight);if(diff)trend=' '+(diff<0?'↓':'↑')+Math.abs(diff).toFixed(1);}
+  els('summary').textContent=sorted.length+' entr'+(sorted.length===1?'y':'ies')+(latest?' · latest '+Number(latest.weight)+' kg'+trend:'');
+  els('log').innerHTML=sorted.length?sorted.map((entry)=>'<article class="item"><div class="grow"><div class="item-title">'+esc(entry.date)+'</div>'+(entry.note?'<div class="muted">'+esc(entry.note)+'</div>':'')+'</div><span class="amount">'+Number(entry.weight)+' kg</span><div class="actions"><button class="danger" data-delete="'+esc(entry.id)+'">Delete</button></div></article>').join(''):'<div class="empty">'+(route==='/add'?'Add your first weigh-in.':'No weigh-ins yet.')+'</div>';
+  renderGoal();
+  renderBuddies();
+  renderChart();
+}
+
+// ───── Sharing ─────
+
+// Channel events only travel when published WITH an instanceId — publish the
+// snapshot into every open weight-share instance so all buddies stay current.
+async function publishHistory(list){
+  if(!shareInstances.length)return;
+  const history=seriesOf(list||mine()).slice(-366).map((point)=>[point.date,point.weight]);
+  const payload={memberName:myName(),history:history,...(Number.isFinite(target)?{target:target}:{})};
+  for(const instance of shareInstances){
+    try{await $events.publish('weight.history',payload,{instanceId:instance});}
+    catch(error){els('share-status').textContent='Could not send progress: '+((error&&error.message)||'unknown error');}
+  }
+}
+
+async function shareProgress(){
+  const status=els('share-status');
+  try{
+    const contacts=await $contacts.pick({label:'Share your weight progress',min:1,max:8});
+    if(!contacts.length)return;
+    const opened=await $share.open({shareId:'weight-share',contacts:contacts});
+    if(!opened.instanceId)return;
+    if(!shareInstances.includes(opened.instanceId))shareInstances.unshift(opened.instanceId);
+    await publishHistory();
+    const waiting=(opened.participants||[]).filter((entry)=>entry.status==='pending').length;
+    status.textContent=waiting>0?'Progress queued — it arrives as soon as your invite is accepted.':'Progress shared. New weigh-ins now travel to your buddies automatically.';
+  }catch(error){status.textContent='Sharing failed: '+((error&&error.message)||'unknown error');}
+}
+
+// Replace one member's rows with the received snapshot (add/update/delete).
+async function applyBuddyHistory(member,memberName,history){
+  const incoming=new Map();
+  for(const entry of(Array.isArray(history)?history.slice(0,400):[])){
+    if(!Array.isArray(entry))continue;
+    const date=String(entry[0]||'').slice(0,10);
+    const weight=Number(entry[1]);
+    if(DATE_PATTERN.test(date)&&Number.isFinite(weight))incoming.set(date,weight);
+  }
+  const existing=rows.filter((row)=>row.member===member);
+  const seen=new Set();
+  for(const row of existing){
+    if(!incoming.has(row.date)||seen.has(row.date)){await $store.delete('weights',row.id);continue;}
+    seen.add(row.date);
+    const weight=incoming.get(row.date);
+    if(Number(row.weight)!==weight||row.memberName!==memberName)await $store.update('weights',row.id,{weight:weight,memberName:memberName});
+  }
+  for(const[date,weight]of incoming){
+    if(!seen.has(date))await $store.create('weights',{date:date,weight:weight,member:member,memberName:memberName});
+  }
+}
+
+// ───── Wiring ─────
+
+Dapp.onReady(async()=>{
+  route=$router.current();
+  $router.subscribe((next)=>{route=next;render();});
+  els('weight-date').value=new Date().toISOString().slice(0,10);
+
+  await $data.subscribe((snapshot)=>{
+    const stored=Number(snapshot&&snapshot.targetWeight);
+    target=Number.isFinite(stored)?stored:null;
+    buddyTargets=(snapshot&&snapshot.buddyTargets&&typeof snapshot.buddyTargets==='object')?snapshot.buddyTargets:{};
+    render();
+  });
+
+  const shares=await $share.list();
+  shareInstances=shares.filter((share)=>share.shareId==='weight-share')
+    .sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')))
+    .map((share)=>share.instanceId)
+    .filter(Boolean);
+
+  await $actions.handle('weight.history.receive',async(payload,context)=>{
+    const from=context.from&&typeof context.from==='object'?context.from:{handle:'contact',displayName:'Buddy'};
+    const member=String(from.handle||'contact');
+    const memberName=String(payload.memberName||from.displayName||'Buddy').slice(0,60);
+    await applyBuddyHistory(member,memberName,payload.history);
+    const goal=Number(payload.target);
+    const nextTargets={...buddyTargets};
+    if(Number.isFinite(goal))nextTargets[member]=goal;else delete nextTargets[member];
+    try{await $data.set('buddyTargets',nextTargets);}catch{buddyTargets=nextTargets;}
+    render();
+  });
+
+  await $store.subscribe('weights',{},(nextRows)=>{rows=nextRows;render();});
+});
+
+document.querySelector('.nav').addEventListener('click',(event)=>{if(event.target.dataset.route)$router.navigate(event.target.dataset.route);});
+els('chart-period').addEventListener('click',(event)=>{
+  const button=event.target.closest('[data-period]');
+  if(!button)return;
+  chartPeriod=button.dataset.period;
+  els('chart-period').querySelectorAll('button').forEach((other)=>other.classList.toggle('on',other===button));
+  renderChart();
+});
+els('share-progress').addEventListener('click',shareProgress);
+els('goal').addEventListener('click',async(event)=>{
+  const action=event.target.dataset.goal;
+  if(!action)return;
+  if(action==='edit'){goalEditing=true;renderGoal();const input=els('goal-input');if(input)input.focus();return;}
+  if(action==='cancel'){goalEditing=false;renderGoal();return;}
+  if(action==='clear'){
+    goalEditing=false;
+    await $data.set('targetWeight',null);
+    target=null;
+    render();
+    await publishHistory();
+    return;
+  }
+  if(action==='save'){
+    const input=els('goal-input');
+    const value=Number(input&&input.value);
+    if(!Number.isFinite(value)||value<20||value>400){if(input)input.reportValidity();return;}
+    goalEditing=false;
+    await $data.set('targetWeight',value);
+    target=value;
+    render();
+    await publishHistory();
+  }
+});
+els('log').addEventListener('click',async(event)=>{
+  const remove=event.target.dataset.delete;
+  if(!remove)return;
+  const row=rows.find((entry)=>entry.id===remove);
+  if(row&&row.member)return;
+  await $store.delete('weights',remove);
+  await publishHistory(mine().filter((entry)=>entry.id!==remove));
+});
+document.getElementById('add-weight').addEventListener('click',async()=>{
+  const date=els('weight-date');const value=els('weight-value');
+  if(!date.reportValidity()||!value.reportValidity())return;
+  const note=els('weight-note').value.trim();
+  await $store.create('weights',{date:date.value,weight:Number(value.value),...(note?{note}:{})});
+  els('weight-note').value='';
+  els('status').textContent='Weigh-in saved.';
+  await publishHistory(mine().concat([{date:date.value,weight:Number(value.value)}]));
+  await $router.navigate('/');
+});
+</script></body></html>

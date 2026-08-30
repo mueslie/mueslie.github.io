@@ -1,0 +1,156 @@
+name: Recipe Book
+icon: 🍳
+color: '#c26a1b'
+routes:
+  - path: /
+    label: Browse
+    icon: dashboard
+  - path: /recipe
+    label: Recipe
+    icon: list
+    hidden: true
+  - path: /catalog
+    label: Catalog
+    icon: list
+  - path: /import
+    label: Import
+    icon: settings
+permissions:
+  host:
+    contacts: true
+    sharing: true
+    files: true
+  # The Catalog tab browses a static recipe catalog served elsewhere (built by
+  # scripts/cookidump-catalog-site.mjs). Grant its exact HTTPS origin here and
+  # the app finds it via Dapp.context.permissions — nothing else to configure.
+  # `connect` lets the app fetch the catalog JSON, `images` lets it show photos.
+  # network:
+  #   connect: [https://recipes.example]
+  #   images: [https://recipes.example]
+db:
+  indexes:
+    - collection: recipes
+      field: title
+    - collection: recipes
+      field: category
+    - collection: recipes
+      field: language
+    - collection: recipes
+      field: calories
+    - collection: recipes
+      field: protein
+    - collection: recipes
+      field: rating
+bindings:
+  events:
+    - id: meal.plan
+      label: Meal planned
+      description: Fired when the cook presses 'Plan this meal' — carries the scaled
+        ingredient list.
+      payload:
+        - name: title
+          type: string
+          required: true
+        - name: date
+          type: string
+        - name: servings
+          type: number
+        - name: recipeId
+          type: string
+          required: true
+        - name: sourceDappId
+          type: string
+        - name: thumb
+          type: string
+        - name: ingredients
+          type: json
+    - id: recipe.shared
+      label: Recipe shared
+      payload:
+        - name: recipe
+          type: json
+          required: true
+  actions:
+    - id: recipe.receive
+      label: Receive shared recipe
+      payload:
+        - name: recipe
+          type: json
+          required: true
+channels:
+  shares:
+    - id: recipe-share
+      label: Recipe
+      events:
+        - recipe.shared
+      actions:
+        - recipe.receive
+      routes:
+        - eventId: recipe.shared
+          actionId: recipe.receive
+      maxParticipants: 8
+entities:
+  - id: recipes
+    name: Recipes
+    icon: 🍳
+    color: "#c26a1b"
+    fields:
+      - id: title
+        name: Title
+        type: text
+        required: true
+      - id: category
+        name: Category
+        type: text
+      - id: language
+        name: Language
+        type: text
+      - id: servings
+        name: Servings
+        type: number
+      - id: servingUnit
+        name: Serving unit
+        type: text
+      - id: totalTime
+        name: Total time
+        type: text
+      - id: prepTime
+        name: Prep time
+        type: text
+      - id: calories
+        name: Calories (kcal)
+        type: number
+      - id: protein
+        name: Protein (g)
+        type: number
+      - id: carbs
+        name: Carbs (g)
+        type: number
+      - id: fat
+        name: Fat (g)
+        type: number
+      - id: rating
+        name: Rating
+        type: number
+      - id: ingredientsJson
+        name: Ingredients (JSON)
+        type: text
+        required: true
+      - id: instructionsJson
+        name: Steps (JSON)
+        type: text
+        required: true
+      - id: sourceId
+        name: Import source id
+        type: text
+      - id: imageFileId
+        name: Photo file id
+        type: text
+      - id: imageName
+        name: Photo file name
+        type: text
+      - id: thumbDataUrl
+        name: Preview thumbnail
+        type: text
+storage:
+  recordFormat: compact

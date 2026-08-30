@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Habit Tracker</title>
+<style>
+:root{--accent:#0e7490}
+:root{color-scheme:light;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f7f7fb;color:#1d1d29}
+*{box-sizing:border-box}[hidden]{display:none!important}html,body{margin:0;min-height:100%;overflow-x:hidden}
+body{padding:max(18px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+main{width:min(760px,100%);margin:0 auto}
+.hero{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+.hero h1{margin:0;font-size:clamp(1.65rem,7vw,2.4rem);letter-spacing:-.045em}
+.hero p{margin:7px 0 0;color:#686879;line-height:1.5}
+.card{background:#fff;border:1px solid #e8e7ef;border-radius:18px;padding:18px;box-shadow:0 10px 32px rgba(35,31,66,.06);margin-bottom:16px}
+.row{display:flex;gap:10px;align-items:center}.wrap{flex-wrap:wrap}.grow{flex:1;min-width:0}.stack{display:grid;gap:12px}
+.muted{color:#717184;font-size:.9rem}.empty{text-align:center;color:#78788a;padding:30px 12px}
+.pill{display:inline-flex;padding:5px 9px;border-radius:999px;background:#f0eff8;color:#55536a;font-size:.78rem;font-weight:700}
+.notice{padding:11px 13px;border-radius:12px;background:#fff7df;color:#705a16;font-size:.84rem;line-height:1.45}
+button,input,select,textarea{font:inherit;font-size:16px}
+button{min-height:44px;border:0;border-radius:12px;padding:10px 15px;font-weight:750;cursor:pointer;background:var(--accent);color:white}
+button.secondary{background:#eeedf5;color:#333244}button.ghost{background:transparent;color:#55536a;border:1px solid #dedde7}
+button.danger{background:#fff0f0;color:#a12626}button:disabled{opacity:.55;cursor:not-allowed}
+input,select,textarea{width:100%;min-height:44px;border:1px solid #d9d8e2;border-radius:11px;padding:10px 12px;background:white;color:#20202b}
+textarea{min-height:76px;resize:vertical;line-height:1.45}
+label{display:grid;gap:6px;font-size:.86rem;font-weight:700;color:#505062}
+.nav{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}.nav button{white-space:nowrap}
+.item{display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:1px solid #efedf4}.item:last-child{border-bottom:0}
+.item-title{font-weight:750;overflow-wrap:anywhere;color:#1d1d29}
+.actions{display:flex;gap:7px;flex-wrap:wrap}.actions button{min-height:40px;padding:7px 11px}
+.amount{font-variant-numeric:tabular-nums;font-weight:800}
+.split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.seg{display:inline-flex;gap:4px;background:#eeedf5;border-radius:11px;padding:4px}
+.seg button{min-height:36px;padding:5px 11px;background:transparent;color:#55536a;border-radius:8px;font-size:.85rem}
+.seg button.on{background:#fff;color:#1d1d29;box-shadow:0 2px 8px rgba(35,31,66,.12)}
+.chart-box{overflow-x:auto}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;font-size:.85rem;color:#55536a}
+.legend .dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:baseline}
+.log-input{width:86px;min-height:40px;text-align:right}
+.streak{font-size:.8rem;color:#a16207;font-weight:700}
+@media(max-width:560px){body{padding-left:12px;padding-right:12px}.card{padding:15px;border-radius:15px}.hero{display:block}.split{grid-template-columns:1fr}.row.mobile-stack{align-items:stretch;flex-direction:column}.row.mobile-stack button{width:100%}.actions button{flex:1}}
+</style>
+</head>
+<body>
+<main>
+  <header class="hero">
+    <div>
+      <h1>Habit Tracker</h1>
+      <p>Track amounts, keep streaks, and compare progress with your habit buddies.</p>
+    </div>
+    <span id="today-count" class="pill">0/0 today</span>
+  </header>
+
+  <section class="card" id="chart-card">
+    <div class="row wrap" style="margin-bottom:10px">
+      <select id="chart-metric" class="grow" aria-label="Chart metric"></select>
+      <div class="seg" id="chart-period" role="group" aria-label="Chart period">
+        <button type="button" data-period="week" class="on">Week</button>
+        <button type="button" data-period="month">Month</button>
+        <button type="button" data-period="year">Year</button>
+        <button type="button" data-period="all">Total</button>
+      </div>
+    </div>
+    <div id="chart" class="chart-box" aria-live="polite"></div>
+    <div id="chart-legend" class="legend"></div>
+    <div id="heatmap"></div>
+  </section>
+
+  <nav class="nav">
+    <button type="button" class="secondary" data-route="/today">Today</button>
+    <button type="button" data-route="/">Habits</button>
+  </nav>
+
+  <section id="habits-view">
+    <div class="card stack">
+      <label>Habit name<input id="habit-name" maxlength="80" required placeholder="Moving / walking"></label>
+      <div class="split">
+        <label>Target amount (optional)<input id="habit-amount" type="number" min="0" step="any" placeholder="30"></label>
+        <label>Unit<input id="habit-unit" maxlength="16" placeholder="min"></label>
+      </div>
+      <div class="split">
+        <label>Target period<select id="habit-per"><option value="day">per day</option><option value="week">per week</option></select></label>
+        <label>Icon (optional emoji)<input id="habit-icon" maxlength="4" placeholder="🚶"></label>
+      </div>
+      <button id="add-habit" type="button">Add habit</button>
+      <div id="habit-status" class="muted" aria-live="polite"></div>
+    </div>
+    <section class="card">
+      <div class="row wrap" style="margin-bottom:6px">
+        <strong class="grow">Your habits</strong>
+        <button type="button" class="ghost" data-sync-shares>Sync shared habits</button>
+      </div>
+      <div id="habits"></div>
+      <p class="muted" style="margin:12px 0 0">Sharing a habit sends its definition and your history to the people you pick; from then on every check-in travels automatically. Buddies track the same habit on their own and appear next to you in the chart. Habits you never share stay on your devices.</p>
+    </section>
+  </section>
+
+  <section id="today-view" class="card" hidden aria-live="polite">
+    <div class="row" style="margin-bottom:6px">
+      <button type="button" class="ghost" id="day-prev" aria-label="Previous day">‹</button>
+      <input type="date" id="day-pick" class="grow" aria-label="Day to log" style="text-align:center">
+      <button type="button" class="ghost" id="day-next" aria-label="Next day">›</button>
+      <button type="button" class="secondary" id="day-today">Today</button>
+    </div>
+    <div id="day-hint" class="notice" style="margin-bottom:10px" hidden></div>
+    <div id="today-status" class="muted" aria-live="polite"></div>
+    <div id="today-list"></div>
+  </section>
+</main>
+<script>
+const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const SERIES_COLORS = ['#0e7490', '#c2410c', '#7c3aed', '#15803d', '#b91c1c', '#a16207', '#0f5da8', '#9d174d'];
+
+let habits = [];
+let checkins = [];
+let route = '/';
+let shareInstance = null;
+let chartPeriod = 'week';
+let chartMetric = '';
+let armedDeleteId = null;
+let noteOpenId = null;
+let selectedDay = ''; // normalized to today by render()
+
+const els = (id) => document.getElementById(id);
+const myName = () => (Dapp.context && Dapp.context.identity && Dapp.context.identity.displayName) || 'You';
+const pad = (n) => String(n).padStart(2, '0');
+const isoDate = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const today = () => isoDate(new Date());
+const parseDay = (key) => {
+  const [y, m, d] = String(key).split('-').map(Number);
+  return new Date(y, m - 1, d); // local midnight — new Date('YYYY-MM-DD') would be UTC and can shift a day
+};
+const fmtNum = (v) => {
+  const n = Number(v) || 0;
+  return Number.isInteger(n) ? String(n) : n.toFixed(1);
+};
+
+function myCheckin(habitId, date) {
+  return checkins.find((r) => !r.member && r.habitId === habitId && r.date === date);
+}
+
+const isWeekly = (habit) => habit.per === 'week';
+
+function weekStartOf(date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); // back to Monday
+  return d;
+}
+
+function sumMineBetween(habit, from, to) {
+  let total = 0;
+  for (const row of checkins) {
+    if (row.member || row.habitId !== habit.id) continue;
+    const date = String(row.date || '');
+    if (date >= from && date <= to) total += Number(row.value) || 0;
+  }
+  return total;
+}
+
+function weekTotal(habit, reference) {
+  const start = weekStartOf(reference || new Date());
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  return sumMineBetween(habit, isoDate(start), isoDate(end));
+}
+
+function dayGoalMet(habit, value) {
+  const goal = Number(habit.amount) || 0;
+  return goal > 0 ? value >= goal : value > 0;
+}
+
+function habitDoneOn(habit, date) {
+  if (isWeekly(habit)) return weekTotal(habit, parseDay(date)) >= (Number(habit.amount) || 1);
+  return dayGoalMet(habit, Number((myCheckin(habit.id, date) || {}).value) || 0);
+}
+
+const habitDoneToday = (habit) => habitDoneOn(habit, today());
+
+function currentStreak(habit) {
+  if (isWeekly(habit)) {
+    const goal = Number(habit.amount) || 1;
+    const start = weekStartOf(new Date());
+    let streak = 0;
+    if (weekTotal(habit, start) < goal) start.setDate(start.getDate() - 7); // the running week doesn't break it yet
+    while (weekTotal(habit, start) >= goal) {
+      streak += 1;
+      start.setDate(start.getDate() - 7);
+      if (streak > 530) break;
+    }
+    return { count: streak, unit: 'week' };
+  }
+  const mine = new Map(checkins.filter((r) => !r.member && r.habitId === habit.id).map((r) => [r.date, Number(r.value) || 0]));
+  const hit = (date) => dayGoalMet(habit, mine.get(date) || 0);
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  let streak = 0;
+  if (!hit(isoDate(d))) d.setDate(d.getDate() - 1); // an unlogged today does not break the streak yet
+  while (hit(isoDate(d))) {
+    streak += 1;
+    d.setDate(d.getDate() - 1);
+    if (streak > 3660) break;
+  }
+  return { count: streak, unit: 'day' };
+}
+
+// ───── Milestones ─────
+
+const DAY_STREAK_MILESTONES = [7, 14, 30, 60, 100, 180, 365];
+const WEEK_STREAK_MILESTONES = [4, 8, 12, 26, 52];
+const TOTAL_MILESTONES = [50, 100, 250, 500, 1000, 2500, 5000, 10000];
+
+function habitTotal(habit) {
+  return checkins.filter((r) => !r.member && r.habitId === habit.id)
+    .reduce((sum, row) => sum + (Number(row.value) || 0), 0);
+}
+
+function reachedMilestones(habit) {
+  const streak = currentStreak(habit);
+  const streakSteps = streak.unit === 'week' ? WEEK_STREAK_MILESTONES : DAY_STREAK_MILESTONES;
+  const total = habitTotal(habit);
+  const streakStep = streakSteps.filter((step) => streak.count >= step).pop() || 0;
+  const totalStep = TOTAL_MILESTONES.filter((step) => total >= step).pop() || 0;
+  const badges = [];
+  if (streakStep) badges.push('🔥 ' + streakStep + '-' + streak.unit + ' streak');
+  if (totalStep) badges.push('🏅 ' + fmtNum(totalStep) + (habit.unit ? ' ' + habit.unit : '') + ' total');
+  return { badges, streak, total, streakStep, totalStep };
+}
+
+// ───── Chart ─────
+
+function chartBuckets() {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const list = [];
+  if (chartPeriod === 'week') {
+    for (let i = 6; i >= 0; i -= 1) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const key = isoDate(d);
+      list.push({ label: d.toLocaleDateString([], { weekday: 'short' }), from: key, to: key });
+    }
+  } else if (chartPeriod === 'month') {
+    const monday = new Date(now);
+    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+    for (let i = 5; i >= 0; i -= 1) {
+      const from = new Date(monday);
+      from.setDate(from.getDate() - i * 7);
+      const to = new Date(from);
+      to.setDate(to.getDate() + 6);
+      list.push({ label: pad(from.getDate()) + '.' + pad(from.getMonth() + 1), from: isoDate(from), to: isoDate(to) });
+    }
+  } else if (chartPeriod === 'year') {
+    for (let i = 11; i >= 0; i -= 1) {
+      const from = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const to = new Date(from.getFullYear(), from.getMonth() + 1, 0);
+      list.push({ label: from.toLocaleDateString([], { month: 'short' }), from: isoDate(from), to: isoDate(to) });
+    }
+  } else {
+    const years = new Set(checkins.map((r) => String(r.date || '').slice(0, 4)).filter((y) => /^\d{4}$/.test(y)));
+    years.add(String(now.getFullYear()));
+    [...years].sort().slice(-8).forEach((year) => {
+      list.push({ label: year, from: year + '-01-01', to: year + '-12-31' });
+    });
+  }
+  return list;
+}
+
+function metricOptions() {
+  const options = [];
+  const units = new Map();
+  for (const habit of habits) {
+    const unit = String(habit.unit || '').trim();
+    if (unit) units.set(unit, (units.get(unit) || 0) + 1);
+  }
+  for (const [unit, count] of units) {
+    if (count > 1) options.push({ id: 'unit:' + unit, label: 'All habits · ' + unit });
+  }
+  for (const habit of habits) {
+    options.push({ id: 'habit:' + habit.id, label: (habit.icon ? habit.icon + ' ' : '') + habit.name + (habit.unit ? ' · ' + habit.unit : '') });
+  }
+  return options;
+}
+
+function metricHabits() {
+  if (chartMetric.startsWith('unit:')) {
+    const unit = chartMetric.slice(5);
+    return habits.filter((habit) => String(habit.unit || '').trim() === unit);
+  }
+  if (chartMetric.startsWith('habit:')) {
+    const habit = habits.find((entry) => entry.id === chartMetric.slice(6));
+    return habit ? [habit] : [];
+  }
+  return [];
+}
+
+function renderChart() {
+  const options = metricOptions();
+  if (!options.some((option) => option.id === chartMetric)) chartMetric = options.length ? options[0].id : '';
+  els('chart-metric').innerHTML = options.map((option) =>
+    '<option value="' + esc(option.id) + '"' + (option.id === chartMetric ? ' selected' : '') + '>' + esc(option.label) + '</option>').join('');
+  els('chart-period').querySelectorAll('[data-period]').forEach((button) => button.classList.toggle('on', button.dataset.period === chartPeriod));
+
+  const selected = metricHabits();
+  const ids = new Set(selected.map((habit) => habit.id));
+  const sharedKeys = new Set(selected.map((habit) => habit.sharedKey).filter(Boolean));
+  const rows = checkins.filter((row) => row.member
+    ? sharedKeys.has(row.sharedKey)
+    : ids.has(row.habitId));
+  if (!selected.length || !rows.some((row) => Number(row.value) > 0)) {
+    els('chart').innerHTML = '<div class="empty">Log a few check-ins to see progress here.</div>';
+    els('chart-legend').innerHTML = '';
+    renderHeatmap(null);
+    return;
+  }
+
+  const buckets = chartBuckets();
+  const seriesMap = new Map(); // member handle ('' = me) → { name, sums }
+  seriesMap.set('', { name: myName(), sums: buckets.map(() => 0) });
+  for (const row of rows) {
+    const member = String(row.member || '');
+    if (!seriesMap.has(member)) seriesMap.set(member, { name: String(row.memberName || 'Buddy'), sums: buckets.map(() => 0) });
+    const date = String(row.date || '');
+    const index = buckets.findIndex((bucket) => date >= bucket.from && date <= bucket.to);
+    if (index >= 0) seriesMap.get(member).sums[index] += Number(row.value) || 0;
+  }
+  const series = [...seriesMap.values()];
+
+  // Target line — only meaningful for a single habit with a set amount, and
+  // only where the target's own period maps onto the bucket granularity.
+  let target = 0;
+  if (selected.length === 1 && Number(selected[0].amount) > 0 && chartPeriod !== 'all') {
+    const amount = Number(selected[0].amount);
+    if (isWeekly(selected[0])) {
+      target = chartPeriod === 'month' ? amount : chartPeriod === 'year' ? amount * 4.35 : 0;
+    } else {
+      target = amount * (chartPeriod === 'week' ? 1 : chartPeriod === 'month' ? 7 : 30);
+    }
+  }
+
+  const W = 720, H = 220, padL = 44, padR = 8, padT = 10, padB = 26;
+  const innerW = W - padL - padR, innerH = H - padT - padB;
+  const max = Math.max(target, ...series.flatMap((entry) => entry.sums), 1);
+  const groupW = innerW / buckets.length;
+  const barW = Math.max(3, Math.min(26, (groupW - 8) / series.length));
+  const y = (value) => padT + innerH - (value / max) * innerH;
+  let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" style="width:100%;min-width:420px;display:block">';
+  [0, 0.5, 1].forEach((fraction) => {
+    const value = max * fraction;
+    svg += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y(value) + '" y2="' + y(value) + '" stroke="#ecebf3" stroke-width="1"/>' +
+      '<text x="' + (padL - 6) + '" y="' + (y(value) + 4) + '" text-anchor="end" font-size="11" fill="#8a8a99">' + fmtNum(value) + '</text>';
+  });
+  buckets.forEach((bucket, bucketIndex) => {
+    const groupX = padL + bucketIndex * groupW + (groupW - barW * series.length) / 2;
+    series.forEach((entry, seriesIndex) => {
+      const value = entry.sums[bucketIndex];
+      if (value <= 0) return;
+      const barH = Math.max(2, (value / max) * innerH);
+      svg += '<rect x="' + (groupX + seriesIndex * barW) + '" y="' + (padT + innerH - barH) + '" width="' + (barW - 1.5) +
+        '" height="' + barH + '" rx="3" fill="' + SERIES_COLORS[seriesIndex % SERIES_COLORS.length] + '"><title>' +
+        esc(entry.name + ' · ' + bucket.label + ': ' + fmtNum(value)) + '</title></rect>';
+    });
+    svg += '<text x="' + (padL + bucketIndex * groupW + groupW / 2) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="11" fill="#8a8a99">' + esc(bucket.label) + '</text>';
+  });
+  if (target > 0 && target <= max) {
+    svg += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y(target) + '" y2="' + y(target) + '" stroke="#c2410c" stroke-width="1.5" stroke-dasharray="5 4"/>';
+  }
+  svg += '</svg>';
+  els('chart').innerHTML = svg;
+
+  const unit = selected.length && selected.every((habit) => habit.unit === selected[0].unit) ? String(selected[0].unit || '') : '';
+  els('chart-legend').innerHTML = series.map((entry, index) =>
+    '<span><span class="dot" style="background:' + SERIES_COLORS[index % SERIES_COLORS.length] + '"></span>' + esc(entry.name) +
+    ' <span class="amount">' + fmtNum(entry.sums.reduce((sum, value) => sum + value, 0)) + (unit ? '&nbsp;' + esc(unit) : '') + '</span></span>').join('')
+    + (target > 0 ? '<span><span class="dot" style="background:transparent;border-top:2px dashed #c2410c;height:0;margin-top:5px"></span>Target</span>' : '');
+
+  renderHeatmap(selected.length === 1 ? selected[0] : null);
+}
+
+// GitHub-style consistency calendar: your own last 13 weeks for one habit,
+// shaded by how much of the daily goal each day reached.
+function renderHeatmap(habit) {
+  const box = els('heatmap');
+  if (!habit) {
+    box.innerHTML = '';
+    return;
+  }
+  const mine = new Map(checkins.filter((r) => !r.member && r.habitId === habit.id).map((r) => [r.date, Number(r.value) || 0]));
+  const goal = isWeekly(habit) ? 0 : Number(habit.amount) || 0;
+  const shade = (value) => {
+    if (value <= 0) return '#ecebf3';
+    if (goal <= 0) return '#2f97b0';
+    const ratio = value / goal;
+    return ratio >= 1 ? '#0e7490' : ratio >= 0.5 ? '#7cc3d4' : '#bfe0e9';
+  };
+  const end = new Date();
+  end.setHours(0, 0, 0, 0);
+  const start = weekStartOf(end);
+  start.setDate(start.getDate() - 7 * 12);
+  const cell = 13, gap = 3, cols = 13, rows = 7;
+  const W = cols * (cell + gap) - gap, H = rows * (cell + gap) - gap;
+  let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" style="width:100%;max-width:300px;display:block">';
+  for (let col = 0; col < cols; col += 1) {
+    for (let row = 0; row < rows; row += 1) {
+      const d = new Date(start);
+      d.setDate(d.getDate() + col * 7 + row);
+      if (d > end) continue;
+      const key = isoDate(d);
+      const value = mine.get(key) || 0;
+      svg += '<rect x="' + (col * (cell + gap)) + '" y="' + (row * (cell + gap)) + '" width="' + cell + '" height="' + cell +
+        '" rx="3" fill="' + shade(value) + '"><title>' + esc(key + ': ' + fmtNum(value) + (habit.unit ? ' ' + habit.unit : '')) + '</title></rect>';
+    }
+  }
+  svg += '</svg>';
+  box.innerHTML = '<div class="muted" style="margin:12px 0 6px">Your last 13 weeks</div>' + svg;
+}
+
+// ───── Views ─────
+
+function render() {
+  document.querySelectorAll('.nav [data-route]').forEach((button) => button.className = button.dataset.route === route ? '' : 'secondary');
+  els('habits-view').hidden = route === '/today';
+  els('today-view').hidden = route !== '/today';
+  const now = today();
+  if (selectedDay > now || !DATE_PATTERN.test(selectedDay)) selectedDay = now;
+  const day = selectedDay;
+  els('day-pick').value = day;
+  els('day-pick').max = now;
+  els('day-next').disabled = day >= now;
+  els('day-today').hidden = day === now;
+  els('day-hint').hidden = day === now;
+  if (day !== now) {
+    els('day-hint').textContent = 'Logging for ' + parseDay(day).toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' }) + ' — check-ins below land on that day.';
+  }
+  const doneToday = habits.filter((habit) => habitDoneToday(habit)).length;
+  els('today-count').textContent = doneToday + '/' + habits.length + ' today';
+
+  els('habits').innerHTML = habits.length ? habits.slice()
+    .sort((a, b) => String(a.createdAt || '9999').localeCompare(String(b.createdAt || '9999')))
+    .map((habit) => {
+      const milestones = reachedMilestones(habit);
+      const streak = milestones.streak;
+      const buddies = [...new Set(checkins.filter((row) => row.member && habit.sharedKey && row.sharedKey === habit.sharedKey).map((row) => row.memberName || 'Buddy'))];
+      const goalText = Number(habit.amount) > 0
+        ? fmtNum(habit.amount) + (habit.unit ? ' ' + esc(habit.unit) : '') + ' / ' + (isWeekly(habit) ? 'week' : 'day')
+        : 'done / not done';
+      return '<article class="item"><span style="font-size:1.5rem">' + esc(habit.icon || '🔁') + '</span>' +
+        '<div class="grow"><div class="item-title">' + esc(habit.name) + '</div>' +
+        '<div class="muted">' + goalText +
+        (streak.count > 0 ? ' · <span class="streak">🔥 ' + streak.count + ' ' + streak.unit + ' streak</span>' : '') +
+        (habit.sharedKey ? ' · shared' + (buddies.length ? ' with ' + esc(buddies.join(', ')) : '') : '') +
+        (habit.sharedBy ? ' · from ' + esc(habit.sharedBy) : '') + '</div>' +
+        (milestones.badges.length ? '<div style="margin-top:6px">' + milestones.badges.map((badge) => '<span class="pill" style="margin-right:6px">' + esc(badge) + '</span>').join('') + '</div>' : '') +
+        '</div>' +
+        '<div class="actions"><button type="button" class="secondary" data-share-habit="' + esc(habit.id) + '">Share</button>' +
+        '<button type="button" class="' + (armedDeleteId === habit.id ? 'danger' : 'ghost') + '" data-delete-habit="' + esc(habit.id) + '">' +
+        (armedDeleteId === habit.id ? 'Really delete?' : 'Delete') + '</button></div></article>';
+    }).join('') : '<div class="empty">No habits yet — add one above.</div>';
+
+  els('today-list').innerHTML = habits.length ? habits.map((habit) => {
+    const mine = myCheckin(habit.id, day);
+    const value = Number((mine || {}).value) || 0;
+    const myNote = String((mine || {}).note || '');
+    const done = habitDoneOn(habit, day);
+    const buddyToday = checkins
+      .filter((row) => row.member && habit.sharedKey && row.sharedKey === habit.sharedKey && row.date === day && (Number(row.value) > 0 || row.note))
+      .map((row) => esc(row.memberName || 'Buddy') + ' ' + fmtNum(row.value) + (habit.unit ? '&nbsp;' + esc(habit.unit) : '') +
+        (row.note ? ' <span class="muted">„' + esc(String(row.note).slice(0, 500)) + '“</span>' : ''));
+    const amount = Number(habit.amount) || 0;
+    const progressText = isWeekly(habit) && amount > 0
+      ? (day === now ? 'this week' : 'that week') + ' <span class="amount">' + fmtNum(weekTotal(habit, parseDay(day))) + '</span> of ' + fmtNum(amount) + (habit.unit ? '&nbsp;' + esc(habit.unit) : '') +
+        ' · ' + (day === now ? 'today' : 'that day') + ' <span class="amount">' + fmtNum(value) + '</span>'
+      : '<span class="amount">' + fmtNum(value) + '</span>' + (habit.unit ? '&nbsp;' + esc(habit.unit) : '') + (amount > 0 ? ' of ' + fmtNum(amount) : '');
+    const controls = amount > 0
+      ? '<input type="number" min="0" step="any" class="log-input" value="' + (value || '') + '" placeholder="0" data-log-input="' + esc(habit.id) + '" aria-label="Amount for ' + esc(habit.name) + '">' +
+        '<button type="button" class="secondary" data-quick="' + esc(habit.id) + '">+' + fmtNum(isWeekly(habit) ? Math.max(1, Math.round(amount / 7)) : amount) + '</button>' +
+        '<button type="button" data-log="' + esc(habit.id) + '">Log</button>'
+      : '<button type="button"' + (done ? '' : ' class="secondary"') + ' data-toggle="' + esc(habit.id) + '">' + (done ? 'Done ✓' : 'Mark done') + '</button>';
+    const noteEditor = noteOpenId === habit.id
+      ? '<div class="stack" style="margin-top:8px;gap:8px"><textarea maxlength="500" rows="3" data-note-input="' + esc(habit.id) +
+        '" placeholder="' + (day === now ? 'Add a note for today' : 'Add a note for that day') + '">' + esc(myNote) + '</textarea>' +
+        '<div class="row"><button type="button" data-note-save="' + esc(habit.id) + '">Save note</button></div></div>'
+      : '';
+    return '<article class="item"><span style="font-size:1.5rem">' + esc(habit.icon || '🔁') + '</span>' +
+      '<div class="grow"><div class="item-title">' + esc(habit.name) + (done ? ' ✓' : '') + '</div>' +
+      '<div class="muted">' + progressText +
+      (myNote && noteOpenId !== habit.id ? ' · „' + esc(myNote) + '“' : '') +
+      (buddyToday.length ? ' · ' + buddyToday.join(' · ') : '') + '</div>' + noteEditor + '</div>' +
+      '<div class="actions">' + controls +
+      '<button type="button" class="ghost" data-note="' + esc(habit.id) + '" aria-label="Note for ' + esc(habit.name) + '">📝</button></div></article>';
+  }).join('') : '<div class="empty">No habits yet — add one on the Habits tab.</div>';
+
+  renderChart();
+}
+
+// ───── Logging ─────
+
+async function logValue(habit, value) {
+  const day = selectedDay;
+  const numeric = Math.max(0, Number(value) || 0);
+  const before = reachedMilestones(habit);
+  const existing = myCheckin(habit.id, day);
+  let note = '';
+  if (existing) {
+    note = String(existing.note || '');
+    await $store.update('checkins', existing.id, { value: numeric, sharedKey: habit.sharedKey || '' });
+    existing.value = numeric;
+  } else {
+    const row = { habitId: habit.id, sharedKey: habit.sharedKey || '', date: day, value: numeric, member: '', memberName: '' };
+    const created = await $store.create('checkins', row);
+    checkins.push({ ...row, id: (created && created.id) || habit.id + ':' + day });
+  }
+  if (habit.sharedKey) await publishProgress(habit, day, numeric, note);
+  const after = reachedMilestones(habit);
+  if (after.streakStep > before.streakStep) {
+    els('today-status').textContent = '🎉 Milestone: ' + after.streakStep + '-' + after.streak.unit + ' streak on “' + habit.name + '”!';
+  } else if (after.totalStep > before.totalStep) {
+    els('today-status').textContent = '🎉 Milestone: ' + fmtNum(after.totalStep) + (habit.unit ? ' ' + habit.unit : '') + ' total on “' + habit.name + '”!';
+  }
+  render();
+}
+
+async function saveNote(habit, text) {
+  const day = selectedDay;
+  const note = String(text || '').trim().slice(0, 500);
+  const existing = myCheckin(habit.id, day);
+  if (existing) {
+    await $store.update('checkins', existing.id, { note });
+    existing.note = note;
+  } else {
+    const row = { habitId: habit.id, sharedKey: habit.sharedKey || '', date: day, value: 0, member: '', memberName: '', note };
+    const created = await $store.create('checkins', row);
+    checkins.push({ ...row, id: (created && created.id) || habit.id + ':' + day });
+  }
+  if (habit.sharedKey) {
+    await publishProgress(habit, day, Number((myCheckin(habit.id, day) || {}).value) || 0, note);
+  }
+  noteOpenId = null;
+  render();
+}
+
+async function publishProgress(habit, date, value, note) {
+  if (!shareInstance || !habit.sharedKey) return;
+  try {
+    const trimmed = String(note || '').trim().slice(0, 500);
+    await $events.publish('habit.progress', {
+      sharedKey: habit.sharedKey, date, value: Number(value) || 0, memberName: myName(),
+      ...(trimmed ? { note: trimmed } : {}),
+    }, { instanceId: shareInstance });
+  } catch (error) {
+    els('habit-status').textContent = 'Progress saved locally; sharing failed: ' + error.message;
+  }
+}
+
+// ───── Sharing ─────
+
+async function publishUpsert(habit) {
+  if (!shareInstance || !habit.sharedKey) return;
+  const history = checkins
+    .filter((row) => !row.member && row.habitId === habit.id && (Number(row.value) > 0 || row.note))
+    .sort((a, b) => String(b.date).localeCompare(String(a.date)))
+    .slice(0, 366)
+    .map((row) => [row.date, Number(row.value) || 0, String(row.note || '').slice(0, 500)]);
+  await $events.publish('habit.upsert', {
+    sharedKey: habit.sharedKey, name: habit.name, icon: habit.icon || '',
+    amount: Number(habit.amount) || 0, unit: habit.unit || '', per: isWeekly(habit) ? 'week' : 'day',
+    memberName: myName(), history,
+  }, { instanceId: shareInstance });
+}
+
+async function shareHabit(habit) {
+  const contacts = await $contacts.pick({ label: 'Share “' + habit.name + '”', min: 1, max: 8 });
+  if (!contacts.length) return;
+  const opened = await $share.open({ shareId: 'habit-share', contacts });
+  if (!opened.instanceId) return;
+  shareInstance = opened.instanceId;
+  if (!habit.sharedKey) {
+    habit.sharedKey = crypto.randomUUID();
+    await $store.update('habits', habit.id, { sharedKey: habit.sharedKey });
+    for (const row of checkins.filter((entry) => !entry.member && entry.habitId === habit.id && !entry.sharedKey)) {
+      await $store.update('checkins', row.id, { sharedKey: habit.sharedKey });
+      row.sharedKey = habit.sharedKey;
+    }
+  }
+  await publishUpsert(habit);
+  const waiting = (opened.participants || []).filter((entry) => entry.status === 'pending').length;
+  els('habit-status').textContent = waiting > 0
+    ? 'Habit queued — it arrives as soon as your invite is accepted.'
+    : 'Habit shared. Every check-in now travels to your buddies automatically.';
+  render();
+}
+
+async function upsertMemberCheckin(sharedKey, date, value, member, memberName, note) {
+  const clean = String(note || '').slice(0, 500);
+  const existing = checkins.find((row) => row.member === member && row.sharedKey === sharedKey && row.date === date);
+  if (existing) {
+    if (Number(existing.value) !== value || existing.memberName !== memberName || String(existing.note || '') !== clean) {
+      await $store.update('checkins', existing.id, { value, memberName, note: clean });
+      existing.value = value;
+      existing.memberName = memberName;
+      existing.note = clean;
+    }
+    return;
+  }
+  const row = { habitId: '', sharedKey, date, value, member, memberName, note: clean };
+  const created = await $store.create('checkins', row);
+  checkins.push({ ...row, id: (created && created.id) || member + ':' + sharedKey + ':' + date });
+}
+
+// ───── Wiring ─────
+
+Dapp.onReady(async () => {
+  route = $router.current();
+  $router.subscribe((next) => { route = next; armedDeleteId = null; render(); });
+
+  const shares = await $share.list();
+  const newest = shares.filter((share) => share.shareId === 'habit-share')
+    .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')))[0];
+  shareInstance = (newest && newest.instanceId) || null;
+
+  await $actions.handle('habit.upsert.receive', async (payload, context) => {
+    const sharedKey = String(payload.sharedKey || '');
+    if (!sharedKey) throw new Error('Shared habit is missing its key');
+    const from = context.from && typeof context.from === 'object' ? context.from : { handle: 'contact', displayName: 'Buddy' };
+    const member = String(from.handle || 'contact');
+    const memberName = String(payload.memberName || from.displayName || 'Buddy').slice(0, 60);
+    let habit = habits.find((entry) => entry.sharedKey === sharedKey);
+    if (!habit) {
+      const row = {
+        name: String(payload.name || 'Shared habit').slice(0, 80),
+        icon: String(payload.icon || '').slice(0, 4),
+        amount: Number(payload.amount) || 0,
+        unit: String(payload.unit || '').slice(0, 16),
+        per: payload.per === 'week' ? 'week' : 'day',
+        sharedKey, sharedBy: memberName, createdAt: today(),
+      };
+      const created = await $store.create('habits', row);
+      habit = { ...row, id: (created && created.id) || sharedKey };
+      habits.push(habit);
+    }
+    const history = Array.isArray(payload.history) ? payload.history.slice(0, 400) : [];
+    for (const entry of history) {
+      if (!Array.isArray(entry)) continue;
+      const date = String(entry[0] || '').slice(0, 10);
+      if (!DATE_PATTERN.test(date)) continue;
+      await upsertMemberCheckin(sharedKey, date, Math.max(0, Number(entry[1]) || 0), member, memberName, entry[2]);
+    }
+    render();
+  });
+
+  await $actions.handle('habit.progress.receive', async (payload, context) => {
+    const sharedKey = String(payload.sharedKey || '');
+    const date = String(payload.date || '');
+    if (!sharedKey || !DATE_PATTERN.test(date)) throw new Error('Malformed progress payload');
+    const from = context.from && typeof context.from === 'object' ? context.from : { handle: 'contact', displayName: 'Buddy' };
+    await upsertMemberCheckin(sharedKey, date, Math.max(0, Number(payload.value) || 0),
+      String(from.handle || 'contact'), String(payload.memberName || from.displayName || 'Buddy').slice(0, 60), payload.note);
+    render();
+  });
+
+  await $store.subscribe('habits', {}, (rows) => { habits = rows; render(); });
+  await $store.subscribe('checkins', {}, (rows) => { checkins = rows; render(); });
+  render();
+});
+
+document.querySelector('.nav').addEventListener('click', (event) => {
+  if (event.target.dataset.route) $router.navigate(event.target.dataset.route);
+});
+
+els('chart-period').addEventListener('click', (event) => {
+  const button = event.target.closest('[data-period]');
+  if (!button) return;
+  chartPeriod = button.dataset.period;
+  renderChart();
+});
+els('chart-metric').addEventListener('input', () => {
+  chartMetric = els('chart-metric').value;
+  renderChart();
+});
+
+els('habits').addEventListener('click', async (event) => {
+  const share = event.target.closest('[data-share-habit]');
+  if (share) {
+    const habit = habits.find((entry) => entry.id === share.dataset.shareHabit);
+    if (habit) {
+      try { await shareHabit(habit); } catch (error) { els('habit-status').textContent = 'Could not share: ' + error.message; }
+    }
+    return;
+  }
+  const remove = event.target.closest('[data-delete-habit]');
+  if (!remove) return;
+  const habitId = remove.dataset.deleteHabit;
+  if (armedDeleteId !== habitId) {
+    armedDeleteId = habitId;
+    render();
+    return;
+  }
+  armedDeleteId = null;
+  const habit = habits.find((entry) => entry.id === habitId);
+  const doomed = checkins.filter((row) => row.habitId === habitId
+    || (habit && habit.sharedKey && row.sharedKey === habit.sharedKey));
+  for (const row of doomed) await $store.delete('checkins', row.id);
+  await $store.delete('habits', habitId);
+});
+
+document.querySelector('[data-sync-shares]').addEventListener('click', async () => {
+  const shared = habits.filter((habit) => habit.sharedKey && !habit.sharedBy);
+  if (!shareInstance || !shared.length) {
+    els('habit-status').textContent = 'Nothing to sync — share a habit first.';
+    return;
+  }
+  try {
+    for (const habit of shared) await publishUpsert(habit);
+    els('habit-status').textContent = 'Re-sent ' + shared.length + ' shared habit' + (shared.length === 1 ? '' : 's') + ' with their history.';
+  } catch (error) {
+    els('habit-status').textContent = 'Sync failed: ' + error.message;
+  }
+});
+
+function selectDay(key) {
+  if (DATE_PATTERN.test(key) && key <= today()) {
+    selectedDay = key;
+    noteOpenId = null;
+  }
+  render(); // also snaps the picker back after an invalid or future entry
+}
+els('day-prev').addEventListener('click', () => {
+  const d = parseDay(selectedDay);
+  d.setDate(d.getDate() - 1);
+  selectDay(isoDate(d));
+});
+els('day-next').addEventListener('click', () => {
+  const d = parseDay(selectedDay);
+  d.setDate(d.getDate() + 1);
+  selectDay(isoDate(d));
+});
+els('day-today').addEventListener('click', () => selectDay(today()));
+els('day-pick').addEventListener('change', () => selectDay(els('day-pick').value));
+
+els('today-list').addEventListener('click', async (event) => {
+  const noteToggle = event.target.closest('[data-note]');
+  if (noteToggle) {
+    noteOpenId = noteOpenId === noteToggle.dataset.note ? null : noteToggle.dataset.note;
+    render();
+    return;
+  }
+  const noteSave = event.target.closest('[data-note-save]');
+  if (noteSave) {
+    const habit = habits.find((entry) => entry.id === noteSave.dataset.noteSave);
+    const input = document.querySelector('[data-note-input="' + CSS.escape(noteSave.dataset.noteSave) + '"]');
+    if (habit && input) await saveNote(habit, input.value);
+    return;
+  }
+  const toggle = event.target.closest('[data-toggle]');
+  if (toggle) {
+    const habit = habits.find((entry) => entry.id === toggle.dataset.toggle);
+    if (!habit) return;
+    const current = Number((myCheckin(habit.id, selectedDay) || {}).value) || 0;
+    await logValue(habit, current > 0 ? 0 : 1);
+    return;
+  }
+  const quick = event.target.closest('[data-quick]');
+  if (quick) {
+    const habit = habits.find((entry) => entry.id === quick.dataset.quick);
+    if (!habit) return;
+    const current = Number((myCheckin(habit.id, selectedDay) || {}).value) || 0;
+    const amount = Number(habit.amount) || 1;
+    const step = isWeekly(habit) ? Math.max(1, Math.round(amount / 7)) : amount;
+    await logValue(habit, current + step);
+    return;
+  }
+  const log = event.target.closest('[data-log]');
+  if (!log) return;
+  const habit = habits.find((entry) => entry.id === log.dataset.log);
+  const input = document.querySelector('[data-log-input="' + CSS.escape(log.dataset.log) + '"]');
+  if (habit && input) await logValue(habit, input.value);
+});
+
+document.getElementById('add-habit').addEventListener('click', async () => {
+  const name = els('habit-name');
+  if (!name.reportValidity()) return;
+  const icon = els('habit-icon').value.trim();
+  const amount = Number(els('habit-amount').value) || 0;
+  const unit = els('habit-unit').value.trim();
+  const per = els('habit-per').value === 'week' ? 'week' : 'day';
+  await $store.create('habits', {
+    name: name.value.trim(), createdAt: today(),
+    ...(icon ? { icon } : {}), ...(amount > 0 ? { amount, per } : {}), ...(unit ? { unit } : {}),
+  });
+  name.value = '';
+  els('habit-icon').value = '';
+  els('habit-amount').value = '';
+  els('habit-unit').value = '';
+  els('habit-per').value = 'day';
+  els('habit-status').textContent = 'Habit added.';
+});
+</script>
+</body>
+</html>

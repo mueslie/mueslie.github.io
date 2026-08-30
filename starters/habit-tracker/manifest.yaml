@@ -1,0 +1,171 @@
+name: Habit Tracker
+icon: 🔁
+color: '#0e7490'
+routes:
+  - path: /today
+    label: Today
+    icon: dashboard
+  - path: /
+    label: Habits
+    icon: list
+permissions:
+  host:
+    contacts: true
+    sharing: true
+bindings:
+  events:
+    - id: habit.upsert
+      label: Habit shared
+      description: Announces a shared habit's definition plus its recent history so a
+        buddy can adopt and compare it.
+      payload:
+        - name: sharedKey
+          type: string
+          required: true
+        - name: name
+          type: string
+          required: true
+        - name: icon
+          type: string
+        - name: amount
+          type: number
+        - name: unit
+          type: string
+        - name: per
+          type: string
+        - name: memberName
+          type: string
+        - name: history
+          type: json
+    - id: habit.progress
+      label: Progress logged
+      description: One member's check-in value for a shared habit on one day.
+        Re-sending the same day updates it.
+      payload:
+        - name: sharedKey
+          type: string
+          required: true
+        - name: date
+          type: string
+          required: true
+        - name: value
+          type: number
+          required: true
+        - name: memberName
+          type: string
+        - name: note
+          type: string
+  actions:
+    - id: habit.upsert.receive
+      label: Receive shared habit
+      payload:
+        - name: sharedKey
+          type: string
+          required: true
+        - name: name
+          type: string
+          required: true
+        - name: icon
+          type: string
+        - name: amount
+          type: number
+        - name: unit
+          type: string
+        - name: per
+          type: string
+        - name: memberName
+          type: string
+        - name: history
+          type: json
+    - id: habit.progress.receive
+      label: Receive buddy progress
+      payload:
+        - name: sharedKey
+          type: string
+          required: true
+        - name: date
+          type: string
+          required: true
+        - name: value
+          type: number
+          required: true
+        - name: memberName
+          type: string
+        - name: note
+          type: string
+channels:
+  shares:
+    - id: habit-share
+      label: Habit buddies
+      events:
+        - habit.upsert
+        - habit.progress
+      actions:
+        - habit.upsert.receive
+        - habit.progress.receive
+      routes:
+        - eventId: habit.upsert
+          actionId: habit.upsert.receive
+        - eventId: habit.progress
+          actionId: habit.progress.receive
+      maxParticipants: 8
+entities:
+  - id: habits
+    name: Habits
+    icon: 🔁
+    color: "#0e7490"
+    fields:
+      - id: name
+        name: Name
+        type: text
+        required: true
+      - id: icon
+        name: Icon
+        type: text
+      - id: amount
+        name: Target amount
+        type: number
+      - id: unit
+        name: Unit
+        type: text
+      - id: per
+        name: Target period
+        type: text
+      - id: sharedKey
+        name: Shared habit key
+        type: text
+      - id: sharedBy
+        name: Shared by
+        type: text
+      - id: createdAt
+        name: Created date
+        type: date
+        required: true
+  - id: checkins
+    name: Check-ins
+    icon: ✅
+    color: "#0e7490"
+    fields:
+      - id: habitId
+        name: Habit ID
+        type: text
+      - id: sharedKey
+        name: Shared habit key
+        type: text
+      - id: date
+        name: Date
+        type: date
+        required: true
+      - id: value
+        name: Value
+        type: number
+        required: true
+      - id: member
+        name: Member handle
+        type: text
+      - id: memberName
+        name: Member name
+        type: text
+      - id: note
+        name: Note
+        type: text

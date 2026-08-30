@@ -1,0 +1,57 @@
+name: Meal Planner
+icon: 📅
+color: '#1f7a55'
+routes:
+  - path: /
+    label: Calendar
+    icon: dashboard
+  - path: /inbox
+    label: Unscheduled
+    icon: list
+bindings:
+  actions:
+    - id: meal.receive
+      label: Receive planned meal
+      description: Accepts 'Meal planned' events from a Recipe Book.
+      payload:
+        - name: title
+          type: string
+          required: true
+        - name: date
+          type: string
+        - name: servings
+          type: number
+        - name: recipeId
+          type: string
+        - name: sourceDappId
+          type: string
+        - name: thumb
+          type: string
+entities:
+  - id: meals
+    name: Planned meals
+    icon: 📅
+    color: "#1f7a55"
+    fields:
+      - id: title
+        name: Meal
+        type: text
+        required: true
+      - id: date
+        name: Planned date
+        type: date
+      - id: status
+        name: Status
+        type: text
+      - id: servings
+        name: Servings
+        type: number
+      - id: recipeId
+        name: Recipe id
+        type: text
+      - id: sourceDappId
+        name: Recipe dapp id
+        type: text
+      - id: thumb
+        name: Preview
+        type: text

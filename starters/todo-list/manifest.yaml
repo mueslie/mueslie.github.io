@@ -1,0 +1,42 @@
+name: To-Do List
+icon: ✅
+color: '#6755e7'
+routes:
+  - path: /
+    label: Tasks
+    icon: list
+  - path: /done
+    label: Completed
+    icon: dashboard
+bindings:
+  events:
+    - id: task.completed
+      label: Task completed
+      description: Published when a task is marked complete.
+      payload:
+        - name: taskId
+          type: string
+          required: true
+        - name: title
+          type: string
+          required: true
+        - name: completedAt
+          type: string
+          required: true
+entities:
+  - id: tasks
+    name: Tasks
+    icon: ✅
+    color: "#6755e7"
+    fields:
+      - id: title
+        name: Title
+        type: text
+        required: true
+      - id: done
+        name: Done
+        type: boolean
+        required: true
+      - id: dueDate
+        name: Due date
+        type: date

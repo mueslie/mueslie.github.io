@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "starters": [
+    {
+      "id": "app-studio",
+      "name": "App Studio",
+      "icon": "🎨",
+      "color": "#7c3aed",
+      "pitch": "Design your own app: define entities, fields and screens, then add, edit and browse records — pictures included."
+    },
+    {
+      "id": "todo-list",
+      "name": "To-Do List",
+      "icon": "✅",
+      "color": "#6755e7",
+      "pitch": "A focused shared task list with due dates and typed completion events.",
+      "files": [
+        "styles.css",
+        "app/tasks.js",
+        "app/view.js",
+        "app/main.js"
+      ]
+    },
+    {
+      "id": "shared-expenses",
+      "name": "Shared Expenses",
+      "icon": "💸",
+      "color": "#0d8f78",
+      "pitch": "Split costs while sharing only the expense slices each friend needs."
+    },
+    {
+      "id": "diary",
+      "name": "Diary",
+      "icon": "📔",
+      "color": "#b14e75",
+      "pitch": "Private daily writing with compressed photos and one-entry sharing."
+    },
+    {
+      "id": "group-chat",
+      "name": "Group Chat",
+      "icon": "💬",
+      "color": "#3478c8",
+      "pitch": "Local-first chat over isolated encrypted relationship channels."
+    },
+    {
+      "id": "weight-tracker",
+      "name": "Weight Tracker",
+      "icon": "⚖️",
+      "color": "#c2410c",
+      "pitch": "A focused weigh-in log sorted by date with a latest-weight summary."
+    },
+    {
+      "id": "habit-tracker",
+      "name": "Habit Tracker",
+      "icon": "🔁",
+      "color": "#0e7490",
+      "pitch": "Build routines with amounts and streaks, share habits with buddies, and compare progress on one chart."
+    },
+    {
+      "id": "recipe-book",
+      "name": "Recipe Book",
+      "icon": "🍳",
+      "color": "#c26a1b",
+      "pitch": "Search, scale and share recipes; plan meals into connected apps."
+    },
+    {
+      "id": "meal-planner",
+      "name": "Meal Planner",
+      "icon": "📅",
+      "color": "#1f7a55",
+      "pitch": "A meal calendar fed by your Recipe Book with jump-back links."
+    },
+    {
+      "id": "shopping-list",
+      "name": "Shopping List",
+      "icon": "🛒",
+      "color": "#4459c9",
+      "pitch": "Scaled ingredients from planned meals, merged into one list."
+    }
+  ]
+}
