@@ -76,6 +76,13 @@
       "icon": "🛒",
       "color": "#4459c9",
       "pitch": "Scaled ingredients from planned meals, merged into one list."
+    },
+    {
+      "id": "game-scores",
+      "name": "Game Score Keeper",
+      "icon": "🎯",
+      "color": "#6d28d9",
+      "pitch": "Round-by-round scores with per-game invites and a live progression chart."
     }
   ]
 }

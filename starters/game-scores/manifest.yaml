@@ -1,0 +1,135 @@
+name: Game Score Keeper
+icon: 🎯
+color: '#6d28d9'
+routes:
+  - path: /
+    label: Games
+    icon: home
+  - path: /game
+    label: Game
+    icon: dashboard
+    hidden: true
+permissions:
+  host:
+    contacts: true
+    sharing: true
+bindings:
+  events:
+    - id: game.update
+      label: Game update
+      description: One score-keeper change (player, score, rename) or a full
+        game snapshot for a shared game.
+      payload:
+        - name: kind
+          type: string
+          required: true
+        - name: gameKey
+          type: string
+          required: true
+        - name: entry
+          type: json
+        - name: snapshot
+          type: json
+        - name: sentAt
+          type: string
+          required: true
+  actions:
+    - id: game.update.receive
+      label: Receive game update
+      payload:
+        - name: kind
+          type: string
+          required: true
+        - name: gameKey
+          type: string
+          required: true
+        - name: entry
+          type: json
+        - name: snapshot
+          type: json
+        - name: sentAt
+          type: string
+          required: true
+channels:
+  shares:
+    - id: game-share
+      label: Game
+      events:
+        - game.update
+      actions:
+        - game.update.receive
+      routes:
+        - eventId: game.update
+          actionId: game.update.receive
+      maxParticipants: 8
+entities:
+  - id: games
+    name: Games
+    icon: 🎯
+    color: "#6d28d9"
+    fields:
+      - id: gameKey
+        name: Game key
+        type: text
+        required: true
+      - id: name
+        name: Name
+        type: text
+        required: true
+      - id: createdAt
+        name: Created at
+        type: datetime
+      - id: updatedAt
+        name: Updated at
+        type: text
+  - id: players
+    name: Players
+    icon: 🧑
+    color: "#6d28d9"
+    fields:
+      - id: gameKey
+        name: Game key
+        type: text
+        required: true
+      - id: playerKey
+        name: Player key
+        type: text
+        required: true
+      - id: name
+        name: Name
+        type: text
+        required: true
+      - id: removed
+        name: Removed
+        type: number
+      - id: order
+        name: Order
+        type: number
+      - id: updatedAt
+        name: Updated at
+        type: text
+  - id: scores
+    name: Scores
+    icon: 🔢
+    color: "#6d28d9"
+    fields:
+      - id: gameKey
+        name: Game key
+        type: text
+        required: true
+      - id: playerKey
+        name: Player key
+        type: text
+        required: true
+      - id: round
+        name: Round
+        type: number
+        required: true
+      - id: value
+        name: Score
+        type: number
+      - id: updatedAt
+        name: Updated at
+        type: text
+storage:
+  recordFormat: compact
