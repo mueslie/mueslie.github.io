@@ -316,18 +316,18 @@
     <header class="hero">
       <div>
         <h1>Game Score Keeper</h1>
-        <p>Round-by-round scores for any game — invite the table, everyone keeps score.</p>
+        <p data-i18n="Round-by-round scores for any game — invite the table, everyone keeps score.">Round-by-round scores for any game — invite the table, everyone keeps score.</p>
       </div>
-      <span id="summary" class="pill">0 games</span>
+      <span id="summary" class="pill">0</span>
     </header>
 
     <section id="home" hidden>
       <div class="card stack">
         <div class="row mobile-stack">
-          <input id="game-name" class="grow" maxlength="80" placeholder="Game night, Skat, Carcassonne…">
-          <button id="new-game" type="button">New game</button>
+          <input id="game-name" class="grow" maxlength="80" data-i18n-placeholder="Game night, Skat, Carcassonne…" placeholder="Game night, Skat, Carcassonne…">
+          <button id="new-game" type="button" data-i18n="New game">New game</button>
         </div>
-        <div class="muted">Each game has its own players and its own invitations — inviting someone to one game never adds them to the next.</div>
+        <div class="muted" data-i18n="Each game has its own players and its own invitations — inviting someone to one game never adds them to the next.">Each game has its own players and its own invitations — inviting someone to one game never adds them to the next.</div>
       </div>
       <div id="games-list" class="card" aria-live="polite"></div>
     </section>
@@ -335,34 +335,34 @@
     <section id="game-view" hidden>
       <div class="card stack">
         <div class="row wrap">
-          <button type="button" class="secondary" id="back-home">← Games</button>
+          <button type="button" class="secondary" id="back-home" data-i18n="← Games">← Games</button>
           <h2 id="game-title" class="grow" style="margin:0;overflow-wrap:anywhere"></h2>
-          <button type="button" class="ghost" id="rename-game">Rename</button>
-          <button type="button" id="invite-players">Invite</button>
+          <button type="button" class="ghost" id="rename-game" data-i18n="Rename">Rename</button>
+          <button type="button" id="invite-players" data-i18n="Invite">Invite</button>
         </div>
         <div id="share-state" class="muted" aria-live="polite"></div>
       </div>
 
       <div class="card stack">
-        <h3 style="margin:0">Players</h3>
+        <h3 style="margin:0" data-i18n="Players">Players</h3>
         <div id="players-list"></div>
         <div class="row mobile-stack">
-          <input id="player-name" class="grow" maxlength="60" placeholder="Player name">
-          <button id="add-player" type="button" class="secondary">Add player</button>
+          <input id="player-name" class="grow" maxlength="60" data-i18n-placeholder="Player name" placeholder="Player name">
+          <button id="add-player" type="button" class="secondary" data-i18n="Add player">Add player</button>
         </div>
       </div>
 
       <div class="card stack">
         <div class="row wrap">
-          <h3 class="grow" style="margin:0">Rounds</h3>
-          <button id="new-round" type="button" class="secondary">New round</button>
+          <h3 class="grow" style="margin:0" data-i18n="Rounds">Rounds</h3>
+          <button id="new-round" type="button" class="secondary" data-i18n="New round">New round</button>
         </div>
         <div class="table-wrap" id="score-table"></div>
         <div id="score-status" class="muted" aria-live="polite"></div>
       </div>
 
       <div class="card">
-        <h3 style="margin:0 0 10px">Score progression</h3>
+        <h3 style="margin:0 0 10px" data-i18n="Score progression">Score progression</h3>
         <div id="chart"></div>
         <div id="chart-legend" class="legend" hidden></div>
       </div>
@@ -378,6 +378,13 @@
     } [char]));
     const els = (id) => document.getElementById(id);
     const now = () => new Date().toISOString();
+    // Static texts are translated in place from their data-i18n key; dynamic
+    // strings go through $t() in the render functions. Both re-run when the
+    // host language changes ($i18n.subscribe below).
+    function applyI18n() {
+      document.querySelectorAll('[data-i18n]').forEach((node) => { node.textContent = $t(node.dataset.i18n); });
+      document.querySelectorAll('[data-i18n-placeholder]').forEach((node) => { node.placeholder = $t(node.dataset.i18nPlaceholder); });
+    }
     const COLORS = ['#6d28d9', '#0e7490', '#15803d', '#b91c1c', '#a16207', '#0f766e', '#9d174d', '#4338ca', '#c2410c', '#334155'];
 
     let games = [];
@@ -414,7 +421,7 @@
         try {
           await $events.publish('game.update', { kind, gameKey: game.gameKey, sentAt: now(), ...body }, { instanceId });
         } catch (error) {
-          els('share-state').textContent = 'Could not sync: ' + ((error && error.message) || 'unknown error');
+          els('share-state').textContent = $t('Could not sync: {message}', { message: (error && error.message) || 'unknown error' });
         }
       }
     }
@@ -526,43 +533,43 @@
     // ───── Rendering ─────
 
     function renderHome() {
-      els('summary').textContent = games.length + ' game' + (games.length === 1 ? '' : 's');
+      els('summary').textContent = games.length + ' ' + $t(games.length === 1 ? 'game' : 'games');
       const sorted = games.slice().sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
       els('games-list').innerHTML = sorted.length ? sorted.map((game) => {
         const names = playersOf(game.gameKey).map((player) => player.name);
         const rounds = maxRound(game.gameKey);
         const shared = instancesOf(game).length > 0;
         const armed = armedDeleteKey === game.gameKey;
-        return '<div class="item"><div class="grow"><div class="item-title">' + esc(game.name) + (shared ? ' <span class="pill">shared</span>' : '') + '</div><div class="muted">' + (names.length ? esc(names.join(', ')) : 'No players yet') + (rounds ? ' · ' + rounds + ' round' + (rounds === 1 ? '' : 's') : '') + '</div></div><div class="actions"><button type="button" data-open="' + esc(game.gameKey) + '">Open</button><button type="button" class="secondary" data-duplicate="' + esc(game.gameKey) + '">New from this</button><button type="button" class="' + (armed ? 'danger' : 'ghost') + '" data-delete="' + esc(game.gameKey) + '">' + (armed ? 'Really delete?' : 'Delete') + '</button></div></div>';
-      }).join('') : '<div class="empty">No games yet — name one above and press “New game”.</div>';
+        return '<div class="item"><div class="grow"><div class="item-title">' + esc(game.name) + (shared ? ' <span class="pill">' + esc($t('shared')) + '</span>' : '') + '</div><div class="muted">' + (names.length ? esc(names.join(', ')) : esc($t('No players yet'))) + (rounds ? ' · ' + rounds + ' ' + esc($t(rounds === 1 ? 'round' : 'rounds')) : '') + '</div></div><div class="actions"><button type="button" data-open="' + esc(game.gameKey) + '">' + esc($t('Open')) + '</button><button type="button" class="secondary" data-duplicate="' + esc(game.gameKey) + '">' + esc($t('New from this')) + '</button><button type="button" class="' + (armed ? 'danger' : 'ghost') + '" data-delete="' + esc(game.gameKey) + '">' + esc($t(armed ? 'Really delete?' : 'Delete')) + '</button></div></div>';
+      }).join('') : '<div class="empty">' + esc($t('No games yet — name one above and press “New game”.')) + '</div>';
     }
 
     function renderPlayers(game) {
       const list = playersOf(game.gameKey);
-      els('players-list').innerHTML = list.length ? list.map((player) => '<div class="item"><span class="dot" style="background:' + colorOf(game.gameKey, player.playerKey) + '"></span><span class="item-title grow">' + esc(player.name) + '</span><div class="actions"><button type="button" class="ghost" data-rename="' + esc(player.playerKey) + '">Rename</button><button type="button" class="ghost" data-remove="' + esc(player.playerKey) + '">Remove</button></div></div>').join('') : '<div class="empty">Add the players sitting at the table.</div>';
+      els('players-list').innerHTML = list.length ? list.map((player) => '<div class="item"><span class="dot" style="background:' + colorOf(game.gameKey, player.playerKey) + '"></span><span class="item-title grow">' + esc(player.name) + '</span><div class="actions"><button type="button" class="ghost" data-rename="' + esc(player.playerKey) + '">' + esc($t('Rename')) + '</button><button type="button" class="ghost" data-remove="' + esc(player.playerKey) + '">' + esc($t('Remove')) + '</button></div></div>').join('') : '<div class="empty">' + esc($t('Add the players sitting at the table.')) + '</div>';
     }
 
     function renderTable(game) {
       const list = playersOf(game.gameKey);
       if (!list.length) {
-        els('score-table').innerHTML = '<div class="empty">Scores appear once there are players.</div>';
+        els('score-table').innerHTML = '<div class="empty">' + esc($t('Scores appear once there are players.')) + '</div>';
         return;
       }
       const rows = Math.max(maxRound(game.gameKey), pendingRounds[game.gameKey] || 0);
       const byCell = new Map();
       for (const score of scoresOf(game.gameKey)) byCell.set(score.playerKey + ':' + score.round, score.value);
-      let html = '<table><thead><tr><th>Round</th>' + list.map((player) => '<th>' + esc(player.name) + '</th>').join('') + '</tr></thead><tbody>';
+      let html = '<table><thead><tr><th>' + esc($t('Round')) + '</th>' + list.map((player) => '<th>' + esc(player.name) + '</th>').join('') + '</tr></thead><tbody>';
       for (let round = 1; round <= rows; round++) {
         html += '<tr><td>' + round + '</td>' + list.map((player) => {
           const value = byCell.get(player.playerKey + ':' + round);
-          return '<td><input type="number" step="any" inputmode="decimal" aria-label="Round ' + round + ' — ' + esc(player.name) + '" data-cell="' + esc(player.playerKey) + ':' + round + '" value="' + (value == null ? '' : esc(String(value))) + '"></td>';
+          return '<td><input type="number" step="any" inputmode="decimal" aria-label="' + esc($t('Round {round} — {name}', { round, name: player.name })) + '" data-cell="' + esc(player.playerKey) + ':' + round + '" value="' + (value == null ? '' : esc(String(value))) + '"></td>';
         }).join('') + '</tr>';
       }
-      html += '<tr class="total"><td>Total</td>' + list.map((player) => {
+      html += '<tr class="total"><td>' + esc($t('Total')) + '</td>' + list.map((player) => {
         const total = scoresOf(game.gameKey).filter((score) => score.playerKey === player.playerKey).reduce((sum, score) => sum + (Number(score.value) || 0), 0);
         return '<td>' + total + '</td>';
       }).join('') + '</tr></tbody></table>';
-      els('score-table').innerHTML = rows ? html : '<div class="empty">Press “New round” after the first hand is played.</div>';
+      els('score-table').innerHTML = rows ? html : '<div class="empty">' + esc($t('Press “New round” after the first hand is played.')) + '</div>';
     }
 
     function renderChart(game) {
@@ -570,7 +577,7 @@
       const rounds = maxRound(game.gameKey);
       const legend = els('chart-legend');
       if (!list.length || rounds < 1) {
-        els('chart').innerHTML = '<div class="empty">The line graph draws itself as rounds come in.</div>';
+        els('chart').innerHTML = '<div class="empty">' + esc($t('The line graph draws itself as rounds come in.')) + '</div>';
         legend.hidden = true;
         return;
       }
@@ -608,15 +615,15 @@
         svg += '<polyline points="' + path + '" fill="none" stroke="' + line.color + '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
         if (rounds <= 40) for (const point of line.points.slice(1)) svg += '<circle cx="' + x(point.round).toFixed(1) + '" cy="' + y(point.total).toFixed(1) + '" r="3" fill="' + line.color + '"><title>' + esc(line.name) + ' — round ' + point.round + ': ' + point.total + '</title></circle>';
       }
-      els('chart').innerHTML = '<svg id="chart-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Cumulative score per round">' + svg + '</svg>';
+      els('chart').innerHTML = '<svg id="chart-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc($t('Cumulative score per round')) + '">' + svg + '</svg>';
     }
 
     function renderGame() {
       const game = gameOf(currentGameKey);
       if (!game) {
-        els('game-title').textContent = 'Game not found';
+        els('game-title').textContent = $t('Game not found');
         els('players-list').innerHTML = '';
-        els('score-table').innerHTML = '<div class="empty">This game no longer exists on this device.</div>';
+        els('score-table').innerHTML = '<div class="empty">' + esc($t('This game no longer exists on this device.')) + '</div>';
         els('chart').innerHTML = '';
         els('chart-legend').hidden = true;
         return;
@@ -624,8 +631,8 @@
       els('game-title').textContent = game.name;
       const shared = instancesOf(game).length;
       els('share-state').textContent = shared
-        ? (Array.isArray(game.instances) ? 'Shared — you relay updates for this table.' : 'Shared game — your edits sync through the game creator.')
-        : 'Only on this device. “Invite” shares this one game with picked contacts — other games stay private.';
+        ? $t(Array.isArray(game.instances) ? 'Shared — you relay updates for this table.' : 'Shared game — your edits sync through the game creator.')
+        : $t('Only on this device. “Invite” shares this one game with picked contacts — other games stay private.');
       renderPlayers(game);
       renderTable(game);
       renderChart(game);
@@ -678,7 +685,9 @@
       await $store.subscribe('games', {}, (rows) => { games = rows; render(); });
       await $store.subscribe('players', {}, (rows) => { players = rows; render(); });
       await $store.subscribe('scores', {}, (rows) => { scores = rows; render(); });
-      render();
+      // Fires immediately with the current language and again on every host
+      // language switch — retranslates static chrome and rerenders lists.
+      $i18n.subscribe(() => { applyI18n(); render(); });
     });
 
     document.getElementById('new-game').addEventListener('click', async () => {
@@ -701,7 +710,7 @@
       if (duplicate) {
         const source = gameOf(duplicate.dataset.duplicate);
         if (!source) return;
-        const name = prompt('Name for the new game', source.name);
+        const name = prompt($t('Name for the new game'), source.name);
         if (name == null || !name.trim()) return;
         const gameKey = crypto.randomUUID();
         await $store.create('games', { gameKey, name: name.trim().slice(0, 80), createdAt: now(), updatedAt: '' });
@@ -731,7 +740,7 @@
     els('rename-game').addEventListener('click', async () => {
       const game = gameOf(currentGameKey);
       if (!game) return;
-      const name = prompt('Rename game', game.name);
+      const name = prompt($t('Rename game'), game.name);
       if (name == null || !name.trim()) return;
       const entry = { name: name.trim().slice(0, 80), updatedAt: now() };
       await $store.update('games', game.id, entry);
@@ -742,7 +751,7 @@
       const game = gameOf(currentGameKey);
       if (!game) return;
       try {
-        const contacts = await $contacts.pick({ label: 'Invite to “' + game.name + '”', min: 1, max: 8 });
+        const contacts = await $contacts.pick({ label: $t('Invite to “{name}”', { name: game.name }), min: 1, max: 8 });
         if (!contacts.length) return;
         const opened = await $share.open({ shareId: 'game-share', contacts });
         if (!opened.instanceId) return;
@@ -753,9 +762,9 @@
         // if the invite sits in the inbox for a while.
         await $events.publish('game.update', { kind: 'snapshot', gameKey: game.gameKey, snapshot: snapshotOf(game), sentAt: now() }, { instanceId: opened.instanceId });
         const waiting = (opened.participants || []).filter((entry) => entry.status === 'pending').length;
-        els('share-state').textContent = waiting > 0 ? 'Invited — the game (players and scores included) arrives when they accept.' : 'Invited. This table now syncs.';
+        els('share-state').textContent = $t(waiting > 0 ? 'Invited — the game (players and scores included) arrives when they accept.' : 'Invited. This table now syncs.');
       } catch (error) {
-        els('share-state').textContent = 'Invite failed: ' + ((error && error.message) || 'unknown error');
+        els('share-state').textContent = $t('Invite failed: {message}', { message: (error && error.message) || 'unknown error' });
       }
     });
 
@@ -778,7 +787,7 @@
       if (rename) {
         const player = playersOf(game.gameKey).find((row) => row.playerKey === rename.dataset.rename);
         if (!player) return;
-        const name = prompt('Rename player', player.name);
+        const name = prompt($t('Rename player'), player.name);
         if (name == null || !name.trim()) return;
         await upsertLocalPlayer(game, player.playerKey, { name: name.trim().slice(0, 60), removed: 0, order: Number(player.order) || 0 });
         return;
@@ -787,7 +796,7 @@
       if (remove) {
         const player = playersOf(game.gameKey).find((row) => row.playerKey === remove.dataset.remove);
         if (!player) return;
-        if (!confirm('Remove ' + player.name + ' from this game? Their past scores stay in the record.')) return;
+        if (!confirm($t('Remove {name} from this game? Their past scores stay in the record.', { name: player.name }))) return;
         await upsertLocalPlayer(game, player.playerKey, { name: player.name, removed: 1, order: Number(player.order) || 0 });
       }
     });
@@ -796,7 +805,7 @@
       const game = gameOf(currentGameKey);
       if (!game) return;
       if (!playersOf(game.gameKey).length) {
-        els('score-status').textContent = 'Add players first.';
+        els('score-status').textContent = $t('Add players first.');
         return;
       }
       pendingRounds[game.gameKey] = Math.max(maxRound(game.gameKey), pendingRounds[game.gameKey] || 0) + 1;
