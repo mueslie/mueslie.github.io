@@ -14,8 +14,32 @@
   "categories": ["productivity", "developer", "utilities"],
   "icons": [
     { "src": "/favicon-196.png", "sizes": "196x196", "type": "image/png", "purpose": "any" },
+    { "src": "/manifest-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "/manifest-icon-192.maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
     { "src": "/manifest-icon-512.maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
     { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-wide-app.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "A collaborative to-do list Code App running in Dapp Builder"
+    },
+    {
+      "src": "/screenshot-wide-welcome.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "Welcome screen — your identity is generated on your device, no account needed"
+    },
+    {
+      "src": "/screenshot-narrow-app.jpg",
+      "sizes": "500x799",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Dapp Builder on a phone"
+    }
   ]
 }

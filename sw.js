@@ -12,7 +12,7 @@
  *
  * Bump CACHE_VERSION when deploy semantics change; stale caches are purged on activate.
  */
-const CACHE_VERSION = 'dapp-builder-v2';
+const CACHE_VERSION = 'dapp-builder-v3';
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const ASSETS_CACHE = `${CACHE_VERSION}-assets`;
 const PRECACHE_URLS = [
@@ -23,6 +23,7 @@ const PRECACHE_URLS = [
   '/apple-icon-180.png',
   '/manifest-icon-192.maskable.png',
   '/manifest-icon-512.maskable.png',
+  '/manifest-icon-512.png',
 ];
 
 self.addEventListener('install', (event) => {
