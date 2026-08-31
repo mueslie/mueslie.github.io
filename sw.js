@@ -12,7 +12,7 @@
  *
  * Bump CACHE_VERSION when deploy semantics change; stale caches are purged on activate.
  */
-const CACHE_VERSION = 'dapp-builder-v3';
+const CACHE_VERSION = 'dapp-builder-v4';
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const ASSETS_CACHE = `${CACHE_VERSION}-assets`;
 const PRECACHE_URLS = [

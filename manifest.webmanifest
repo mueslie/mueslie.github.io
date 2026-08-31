@@ -6,12 +6,40 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "launch_handler": { "client_mode": "focus-existing" },
   "orientation": "any",
   "lang": "en",
   "dir": "ltr",
   "background_color": "#0D0E14",
   "theme_color": "#EA580C",
   "categories": ["productivity", "developer", "utilities"],
+  "protocol_handlers": [
+    { "protocol": "web+dapp", "url": "/invite?code=%s" }
+  ],
+  "shortcuts": [
+    {
+      "name": "New Dapp",
+      "short_name": "New",
+      "description": "Create a new dapp",
+      "url": "/?action=new-dapp",
+      "icons": [{ "src": "/favicon-196.png", "sizes": "196x196", "type": "image/png" }]
+    },
+    {
+      "name": "Join invite",
+      "short_name": "Join",
+      "description": "Join an app or pair with a contact from an invite",
+      "url": "/?action=join-invite",
+      "icons": [{ "src": "/favicon-196.png", "sizes": "196x196", "type": "image/png" }]
+    },
+    {
+      "name": "People & Sharing",
+      "short_name": "People",
+      "description": "Contacts, pairing, and shares",
+      "url": "/people",
+      "icons": [{ "src": "/favicon-196.png", "sizes": "196x196", "type": "image/png" }]
+    }
+  ],
   "icons": [
     { "src": "/favicon-196.png", "sizes": "196x196", "type": "image/png", "purpose": "any" },
     { "src": "/manifest-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
