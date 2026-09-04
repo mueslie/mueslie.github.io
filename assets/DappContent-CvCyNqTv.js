@@ -1,0 +1,1 @@
+import{t as e}from"./vendor-react-DgKFx7ob.js";import{t}from"./utils-DojpP95n.js";var n=e();function r({children:e,width:r=`wide`,className:i}){return(0,n.jsx)(`div`,{className:t(`mx-auto w-full px-4 py-6 sm:px-8 sm:py-8`,r===`wide`?`max-w-[1480px] xl:px-10 xl:py-10`:`max-w-3xl`,i),children:e})}export{r as t};

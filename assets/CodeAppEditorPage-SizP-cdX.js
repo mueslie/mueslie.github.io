@@ -1,0 +1,1 @@
+import{t as e,u as t}from"./vendor-react-DgKFx7ob.js";import{i as n}from"./index-DnHuya4O.js";var r=e();function i(){let{id:e}=t();return e?(0,r.jsx)(`div`,{className:`mx-auto flex h-[calc(100dvh-4rem)] w-full max-w-7xl flex-col px-4 py-6 sm:px-8 lg:h-dvh`,children:(0,r.jsx)(n,{dappId:e})}):null}export{i as default};

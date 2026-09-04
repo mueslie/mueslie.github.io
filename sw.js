@@ -12,7 +12,7 @@
  *
  * Bump CACHE_VERSION when deploy semantics change; stale caches are purged on activate.
  */
-const CACHE_VERSION = 'dapp-builder-v4';
+const CACHE_VERSION = 'dapp-builder-v5';
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const ASSETS_CACHE = `${CACHE_VERSION}-assets`;
 const PRECACHE_URLS = [
@@ -120,4 +120,37 @@ self.addEventListener('fetch', (event) => {
 
 self.addEventListener('message', (event) => {
   if (event.data === 'SKIP_WAITING') self.skipWaiting();
+});
+
+/* ── Web Push (docs/plans/2026-08-31-push-notifications.md) ──
+ * Tickles are content-free by design; the payload is never trusted or
+ * rendered. The notification text is a client-side constant, and tapping it
+ * just opens the app, which pulls whatever is waiting over the normal
+ * verified P2P path. */
+self.addEventListener('push', (event) => {
+  event.waitUntil(self.registration.showNotification('Dapp Builder', {
+    body: 'Something is waiting for you in Dapp Builder.',
+    icon: '/manifest-icon-192.maskable.png',
+    badge: '/favicon-196.png',
+    tag: 'dapp-builder-tickle',
+  }));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil((async () => {
+    const clientList = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const existing = clientList.find((client) => 'focus' in client);
+    if (existing) await existing.focus();
+    else await self.clients.openWindow('/');
+  })());
+});
+
+/* Only a window client holds the relay ownership secret, so re-registration
+ * after a browser-initiated subscription rotation happens in the app. */
+self.addEventListener('pushsubscriptionchange', (event) => {
+  event.waitUntil((async () => {
+    const clientList = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    clientList.forEach((client) => client.postMessage('push-subscription-changed'));
+  })());
 });
