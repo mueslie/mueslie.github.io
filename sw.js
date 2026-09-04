@@ -9,10 +9,17 @@
  *    (offline fallback to the cached copy).
  *  - Everything else same-origin (icons, legal pages): stale-while-revalidate.
  *  - Cross-origin requests are never touched; WebSockets/WebRTC bypass the SW.
+ *  - POST /share-target (Web Share Target with files): the shared files are
+ *    staged in SHARE_STAGING_CACHE and the request is redirected to the GET
+ *    picker page, which reads them back (src/services/webShare.ts).
  *
  * Bump CACHE_VERSION when deploy semantics change; stale caches are purged on activate.
  */
-const CACHE_VERSION = 'dapp-builder-v5';
+const CACHE_VERSION = 'dapp-builder-v6';
+// Keep in sync with SHARE_STAGING_CACHE / SHARE_STAGING_PREFIX in src/services/webShare.ts.
+const SHARE_STAGING_CACHE = 'dapp-builder-share-staging';
+const SHARE_STAGING_PREFIX = '/share-target/staged/';
+const MAX_SHARED_FILES = 20;
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const ASSETS_CACHE = `${CACHE_VERSION}-assets`;
 const PRECACHE_URLS = [
@@ -37,7 +44,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     for (const key of await caches.keys()) {
-      if (!key.startsWith(CACHE_VERSION)) await caches.delete(key);
+      if (!key.startsWith(CACHE_VERSION) && key !== SHARE_STAGING_CACHE) await caches.delete(key);
     }
     await self.clients.claim();
   })());
@@ -47,11 +54,53 @@ function offlineResponse() {
   return new Response('Offline', { status: 503, statusText: 'Offline' });
 }
 
+/**
+ * Web Share Target POST: stage the files (one cache entry each, the original
+ * name in a header) and bounce to the picker page. Only one share is staged
+ * at a time — an abandoned one is dropped by the next.
+ */
+async function stageSharedFiles(request) {
+  const params = new URLSearchParams();
+  let staged = 0;
+  try {
+    const form = await request.formData();
+    for (const field of ['title', 'text', 'url']) {
+      const value = form.get(field);
+      if (typeof value === 'string' && value.trim()) params.set(field, value);
+    }
+    const files = form.getAll('files').filter((entry) => entry instanceof File && entry.size > 0).slice(0, MAX_SHARED_FILES);
+    if (files.length > 0) {
+      const id = crypto.randomUUID();
+      await caches.delete(SHARE_STAGING_CACHE);
+      const cache = await caches.open(SHARE_STAGING_CACHE);
+      for (const file of files) {
+        await cache.put(`${SHARE_STAGING_PREFIX}${id}/${staged}`, new Response(file, {
+          headers: {
+            'content-type': file.type || 'application/octet-stream',
+            'x-share-name': encodeURIComponent(file.name || ''),
+          },
+        }));
+        staged += 1;
+      }
+      params.set('share', id);
+      params.set('files', String(staged));
+    }
+  } catch {
+    // Malformed form data — land on the picker with whatever parsed.
+  }
+  const query = params.toString();
+  return Response.redirect(`/share-target${query ? `?${query}` : ''}`, 303);
+}
+
 self.addEventListener('fetch', (event) => {
   const request = event.request;
-  if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+  if (request.method === 'POST' && url.pathname === '/share-target') {
+    event.respondWith(stageSharedFiles(request));
+    return;
+  }
+  if (request.method !== 'GET') return;
 
   // SPA navigations — network first, offline fallback to the cached shell.
   if (request.mode === 'navigate') {

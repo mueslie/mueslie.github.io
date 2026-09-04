@@ -62,7 +62,7 @@
   <li>Upon acceptance, a <strong>separate, isolated data channel</strong> is created for exactly this app and this relationship. The control room itself never carries app data — only control messages (offers, acknowledgements, revocations).</li>
   <li>A <strong>revocation</strong> removes exactly that channel — other shared apps with the same person remain untouched.</li>
 </ol>
-<p>Pending offers remain visible as inbox entries and can be revoked at any time — even if the other device never received them. App packages (<code>.dapp.json</code>) contain only metadata and source code, never records, members or credentials; installation always creates fresh, independent credentials.</p>
+<p>Pending offers remain visible as inbox entries and can be revoked at any time — even if the other device never received them. App packages (<code>.dapp</code> files) contain only metadata and source code, never records, members or credentials; installation always creates fresh, independent credentials.</p>
 
 <h2>Code dapps: your app inside a sandbox</h2>
 <p>An app's visible part is a <strong>Code App</strong>: a synchronized <code>index.html</code> running inside a strictly separated sandbox (an iframe with an opaque origin). Network access, external scripts, nested frames and forms are blocked by a content security policy; the app talks to the framework through a small, role-checked API (<code>$data</code>, <code>$store</code>, <code>$router</code> and friends). How to build your own Code Apps is explained in <a href="code-dapps.html">Building your own Code Dapps</a>. Four ready-made starter apps (To-Do List, Shared Expenses, Diary, Group Chat) serve as templates and can be modified freely.</p>
