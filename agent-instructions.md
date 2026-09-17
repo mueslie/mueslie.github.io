@@ -87,6 +87,7 @@ routes:                    # 1–32 unique routes; the first is usually /
     hidden: true           # omitted from the sidebar, still navigable — NOT access control
 display:                   # optional
   chrome: fullscreen       # default landing without the framework sidebar
+  frameButton: false       # optional: hide the corner "Show app framework" button in fullscreen
 entities:                  # optional but recommended: documents your collections
   - id: items              # the $store collection name
     name: Items
