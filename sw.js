@@ -107,8 +107,17 @@ self.addEventListener('fetch', (event) => {
     event.respondWith((async () => {
       try {
         const response = await fetch(request);
-        const cache = await caches.open(SHELL_CACHE);
-        cache.put('/', response.clone());
+        // Only a successful HTML answer may be kept for offline use — never an
+        // error page a proxy served during a deploy. And only an APP route is
+        // the app shell: the static pages (/imprint.html, /privacy.html, …) are
+        // kept under their own URL, otherwise opening one of them replaced the
+        // cached shell and every route showed that page when offline.
+        const isHtml = (response.headers.get('content-type') ?? '').includes('text/html');
+        if (response.ok && isHtml) {
+          const cache = await caches.open(SHELL_CACHE);
+          const isStaticPage = new URL(request.url).pathname.endsWith('.html');
+          cache.put(isStaticPage ? request : '/', response.clone());
+        }
         return response;
       } catch {
         return (await caches.match(request, { ignoreSearch: true }))
