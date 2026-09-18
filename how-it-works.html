@@ -33,15 +33,16 @@
 <table>
   <tr><th>Document</th><th>Contents</th></tr>
   <tr><td><strong>Dapp document</strong></td><td>Metadata (name, icon, color), member list, optional data schema, the actual records, and generic app state.</td></tr>
-  <tr><td><strong>Source document</strong></td><td>A Code App's source files (e.g. <code>index.html</code>, <code>manifest.yaml</code>). It lives in its own database with its own sync room whose credentials are derived deterministically from the main dapp — no extra secret inside invites.</td></tr>
+  <tr><td><strong>Source document</strong></td><td>A Code App's source files (e.g. <code>index.html</code>, <code>manifest.yaml</code>). It lives in its own database and travels over the same member-verified connections as the dapp document — no extra secret inside invites. Only source that an owner has signed is run on the members' devices.</td></tr>
 </table>
 
 <h2>Synchronization: WebRTC, brokered only at first contact</h2>
 <p>Devices find each other through a <strong>signaling server</strong> that only brokers the initial introduction — like a notice board where two devices arrange to talk directly. The data transfer itself runs peer-to-peer between the devices and is end-to-end protected. The signaling operator never sees dapp content; during brokering, connection data (such as IP addresses) is exchanged between the devices as with any WebRTC connection — details in the <a href="privacy.html">privacy policy</a>.</p>
+<p>A dapp's documents are exchanged only between devices that have <strong>proven a member key</strong>: when two devices connect, each signs a fresh challenge with its identity key, and the other checks that key against the dapp's signed member list before a single byte of the dapp is sent. Knowing a dapp's connection secret is not enough. A device that an owner removes is refused by every other device as soon as they have learned of the removal.</p>
 <p>The signaling server is the only central infrastructure, and it can be self-hosted: the app accepts a custom server via the build variable <code>VITE_SIGNALING_URL</code>. In rare, very restrictive networks (e.g. strict corporate firewalls) a direct connection may fail — in every case your data remains safe locally and catches up later.</p>
 
 <h2>Identities and access control</h2>
-<p>On first start the app generates a cryptographic key pair (Ed25519) on your device. That key is your identity — no accounts, no passwords. It can be exported as an encrypted backup and restored onto other devices.</p>
+<p>On first start the app generates a cryptographic key pair (Ed25519) on your device. That key is your identity — no accounts, no passwords. The private key is stored so that it cannot be read out again, not even by the app itself; it never leaves the device. Each device therefore has its own identity — a second device of yours is simply invited to your dapps as another member.</p>
 <p>Every dapp knows its members and their roles:</p>
 <ul>
   <li><strong>Owner</strong> — manages everything: members, invites, source code, schema.</li>
@@ -51,7 +52,7 @@
 <p>Sensitive changes (member list, record deletions, role assignments) are <strong>cryptographically signed</strong> by the owner. Every device verifies each incoming change against these signatures: anything not properly signed is reverted automatically. Deleted records are marked with signed tombstones so older copies on other devices cannot resurrect them. A member cannot simply grant themselves more rights — all devices jointly enforce this.</p>
 
 <h2>Contacts: private pairing</h2>
-<p>Before you can share a dapp with someone, a relationship is established through <strong>pairing</strong>: one person creates a short-lived, signed invite (<code>relationship://pair/…</code>) which is entered on the second device. The invite opens a one-time lobby; both sides see the other's signed request and approve deliberately. For verification, both devices display the same <strong>safety number</strong> derived from the two keys — if it matches on both screens, the connection has not been tampered with.</p>
+<p>Before you can share a dapp with someone, a relationship is established through <strong>pairing</strong>: one person creates a short-lived, signed invite (<code>dapp://invite/pair/…</code>) which is entered on the second device. The invite opens a one-time lobby; both sides see the other's signed request and approve deliberately. For verification, both devices display the same <strong>safety number</strong> derived from the two keys — if it matches on both screens, the connection has not been tampered with.</p>
 <p>Each pairing receives its own relationship identity and its own encrypted control room. Isolating people from one another is a core principle: what you share with person A is technically invisible to person B.</p>
 
 <h2>Sharing dapps: offers, isolated channels, revocation</h2>
@@ -65,13 +66,13 @@
 <p>Pending offers remain visible as inbox entries and can be revoked at any time — even if the other device never received them. App packages (<code>.dapp</code> files) contain only metadata and source code, never records, members or credentials; installation always creates fresh, independent credentials.</p>
 
 <h2>Code dapps: your app inside a sandbox</h2>
-<p>An app's visible part is a <strong>Code App</strong>: a synchronized <code>index.html</code> running inside a strictly separated sandbox (an iframe with an opaque origin). Network access, external scripts, nested frames and forms are blocked by a content security policy; the app talks to the framework through a small, role-checked API (<code>$data</code>, <code>$store</code>, <code>$router</code> and friends). How to build your own Code Apps is explained in <a href="code-dapps.html">Building your own Code Dapps</a>. Four ready-made starter apps (To-Do List, Shared Expenses, Diary, Group Chat) serve as templates and can be modified freely.</p>
+<p>An app's visible part is a <strong>Code App</strong>: a synchronized <code>index.html</code> running inside a strictly separated sandbox (an iframe with an opaque origin). Network access, external scripts, nested frames and forms are blocked by a content security policy; the app talks to the framework through a small, role-checked API (<code>$data</code>, <code>$store</code>, <code>$router</code> and friends). How to build your own Code Apps is explained in <a href="code-dapps.html">Building your own Code Dapps</a>. Eleven ready-made starter apps — among them To-Do List, Shared Expenses, Diary, Group Chat, Recipe Book and Shopping List — serve as templates and can be modified freely.</p>
 
 <h2>Install as an app</h2>
 <p>Dapp Builder is an installable web app (PWA): via your browser's menu ("Add to home screen" / "Install app") it gets its own icon and its own window without browser chrome. Installing additionally protects local data — notably on iOS, where non-installed web apps may have their data evicted after seven days of disuse. Once installed, the app starts even without an internet connection.</p>
 
-<h2>Control by agents (MCP)</h2>
-<p>For automated use, an optional MCP server (Model Context Protocol) running locally on your machine provides programmatic access: creating and joining dapps, creating and accepting invites, managing schemas and records. It speaks stdio only and uses the same signed protocols as the app itself — agents cannot write anything a real device could not.</p>
+<h2>An always-on device of your own (keeper)</h2>
+<p>Peer-to-peer means a change only travels while two devices are online at the same time. For that there is an optional <strong>keeper</strong>: the same software without a screen, running on a machine of yours (a NAS, a small server). It is invited to a dapp like any other device, keeps a copy and passes changes on, so your phone and your laptop stay in step even if they are never online together. It uses the same signed protocols as the app itself — it cannot write anything a member device could not, and it cannot give itself access to a dapp.</p>
 
 <h2>What deliberately does <em>not</em> happen</h2>
 <ul>
