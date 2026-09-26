@@ -74,6 +74,16 @@ YAML 1.2 (JSON syntax also parses). Unknown keys are **rejected**, so only use
 what is listed here. Validation fails closed: an invalid manifest stops the
 app from installing and shows the reason in the editor.
 
+## Sharing source
+
+An owner can create a reusable, 24-hour **source-share link** from Dapp
+Settings. It transfers a signed definition containing source files and display
+metadata only; it never joins the recipient to the original dapp or transfers
+records, members, credentials, P2P files, or channels. The owner device must
+stay online while the recipient opens the link. Recipients review the definition
+before either installing an independent dapp or, if they own one already,
+replacing only that dapp's source and manifest (its data and members remain).
+
 ```yaml
 name: Shopping List        # ≤ 80 chars; the app's display name everywhere
 icon: 🛒                   # one emoji, ≤ 16 chars
