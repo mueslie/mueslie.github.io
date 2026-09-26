@@ -142,11 +142,11 @@ permissions:               # optional; everything defaults to off
     contacts: true         # $contacts.pick / $contacts.invite
     sharing: true          # $share.*
     files: true            # $files.*
-   network:
-     connect: [https://api.example.com]   # exact https origins only, ≤ 32; server must send CORS *
-     images: [https://images.example.com]
-   device:
-     camera: true                         # navigator.mediaDevices.getUserMedia({ video: true })
+  network:
+    connect: [https://api.example.com]   # exact https origins only, ≤ 32; server must send CORS *
+    images: [https://images.example.com]
+  device:
+    camera: true                       # $camera.start / .frame / .stop (host camera bridge)
 shareTarget:               # optional: appear in the OS "share to" picker
   accepts: [text, url]
 ```
@@ -190,6 +190,7 @@ you can show the user.
 | `$contacts.pick({ min?, max?, label? })`, `$contacts.invite()` | host contact picker | resolves to an **array** of opaque handles `{ handle, displayName, verified }` (empty when cancelled) |
 | `$share.open({ shareId, contacts })`, `.list()`, `.participants(instanceId)`, `.close(instanceId)`, `.leave(instanceId)` | contact-scoped channels | host shows a consent dialog; `instanceId: null` means declined |
 | `$files.list()`, `.get(id)`, `.objectUrl(id)`, `.add({name, mime, data})`, `.delete(id)` | P2P file store | `get` can take up to 2 min over the wire |
+| `$camera.start({facingMode: 'environment'})`, `.frame()`, `.stop()` | live camera preview / detection | needs `permissions.device.camera`; start returns `{width,height}`; frame returns `{bytes: ArrayBuffer,mime,width,height}` (JPEG, ≤1280 px, ≤15 fps) |
 | `$ui.openCodeEditor({file})`, `$ui.openSettings({section})` | host modals | resolve when the modal closes; `{opened:false}` is a soft decline |
 | `$t(key, params?)`, `$i18n.language()` / `.available()` / `.subscribe(cb)` | translations | dictionaries in `i18n/<lang>.json`; keys are your English strings |
 
@@ -197,6 +198,19 @@ you can show the user.
 documentation for the host UI, not a requirement. `$db` is for collections
 too large to hold in memory in the iframe (thousands of rows); everything
 else should just use `$store.subscribe` and render from the delivered array.
+
+### Live camera
+
+Use **`$camera`**, never native `getUserMedia`: browsers reject the sandbox's
+opaque origin even with `allow="camera"`. The host requests browser camera
+permission on HTTPS/localhost and returns successive device-local frames.
+After `$camera.start()` from a button click, await `$camera.frame()` in a loop,
+decode `new Blob([frame.bytes], {type: frame.mime})` with `createImageBitmap`
+(or an `Image` and an object URL), draw to a canvas, then draw detection overlays.
+Close each bitmap / revoke each object URL. Keep only one frame request in flight.
+Use `.stop()` on pause or route exit and handle rejection in both start and the
+frame loop. Hiding the page or closing/reloading the app stops capture; restart
+from a user action. Frames are not saved or synced by the host.
 
 ## Recommended structure
 
@@ -262,7 +276,7 @@ handles the host gives you. The recipient must have the same app installed
 - [ ] Every `$events.publish` / `$actions.handle` id is declared under `bindings`.
 - [ ] Every `$share.open` shareId is declared under `channels.shares` and `permissions.host.sharing` is set.
 - [ ] `$files`, `$contacts`, `$ui` calls have their `permissions.host` flag.
-- [ ] Camera access has `permissions.device.camera: true` and is requested from a user action.
+- [ ] Live camera uses `$camera` with `permissions.device.camera: true`, starts from a user action, and stops on pause/route exit.
 - [ ] No `type="module"`, no external URLs, no `<form>` submits, no `eval`.
 - [ ] Every linked file exists in the file map with the exact relative path.
 - [ ] Viewers see a read-only UI; writes are wrapped in try/catch and show the error.
