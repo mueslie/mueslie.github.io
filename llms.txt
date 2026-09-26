@@ -142,9 +142,11 @@ permissions:               # optional; everything defaults to off
     contacts: true         # $contacts.pick / $contacts.invite
     sharing: true          # $share.*
     files: true            # $files.*
-  network:
-    connect: [https://api.example.com]   # exact https origins only, ≤ 32; server must send CORS *
-    images: [https://images.example.com]
+   network:
+     connect: [https://api.example.com]   # exact https origins only, ≤ 32; server must send CORS *
+     images: [https://images.example.com]
+   device:
+     camera: true                         # navigator.mediaDevices.getUserMedia({ video: true })
 shareTarget:               # optional: appear in the OS "share to" picker
   accepts: [text, url]
 ```
@@ -260,6 +262,7 @@ handles the host gives you. The recipient must have the same app installed
 - [ ] Every `$events.publish` / `$actions.handle` id is declared under `bindings`.
 - [ ] Every `$share.open` shareId is declared under `channels.shares` and `permissions.host.sharing` is set.
 - [ ] `$files`, `$contacts`, `$ui` calls have their `permissions.host` flag.
+- [ ] Camera access has `permissions.device.camera: true` and is requested from a user action.
 - [ ] No `type="module"`, no external URLs, no `<form>` submits, no `eval`.
 - [ ] Every linked file exists in the file map with the exact relative path.
 - [ ] Viewers see a read-only UI; writes are wrapped in try/catch and show the error.
